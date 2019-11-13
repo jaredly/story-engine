@@ -1,0 +1,115 @@
+ItemEncyclopedia(
+    kinds: {
+        pants: Kind(
+            name: "pants",
+            is_a: ["clothing"],
+        ),
+        clothing: Kind(
+            name: "clothing",
+        ),
+        food: Kind(
+            name: "food",
+        ),
+        drink: Kind(
+            name: "drink",
+        ),
+        // flammable: Kind(
+        //     name: "flammable",
+        // ),
+        // fire_retardant: Kind(
+        //     name: "fire retardant",
+        // )
+    },
+    materials: {
+        wood: Material(
+            name: "wood",
+            adj: "wooden",
+            flammability: 0.5,
+            // slightly, badly
+            damaged: ["scratched", "splintered", "cracked"],
+            quality: ["crude", "well-crafted"],
+        ),
+        silver: Material(
+            name: "silver",
+            adj: "silver",
+            melting_point: 1640,
+            damaged: ["tarnished", "bent", "dented", "chipped"],
+            quality: [""]
+        ),
+        steel: Material(
+            name: "steel",
+            adj: "steel",
+            melting_point: 2500,
+            damaged: ["rusty", "bent", "dented", "chipped"],
+            quality: ["ornate", "simple"]
+        ),
+        cheese: Material(
+            name: "cheese",
+            adj: "cheese",
+            melting_point: 100,
+            damaged: ["half-eaten"],
+            quality: ["hard", "soft", "moldy", "fine"],
+        )
+    },
+    items: {
+        cheese_block: Item(
+            kinds: ["food", "missile"],
+            materials: ["cheese"],
+        )
+        // cheese: Item(
+        //     kinds: ["food"],
+        //     // variants: Variant(
+        //     //     kind: "hard",
+        //     //     description: "a hard cheese",
+        //     // )
+        // ),
+        pants: Item(
+            names: ["pants", "pants"],
+            kinds: ["clothing", "pants"],
+            materials: ["leather", "cotton"],
+        ),
+        knife: Item(
+            names: ("knife", "knives"),
+            kinds: ["eating_utensil", "cut", "poke", "hand_weapon"],
+            parts: [
+                Part(
+                    name: "handle",
+                    count: Single,
+                    materials: ["wood"]
+                ),
+                Part(
+                    name: "blade",
+                    count: Single,
+                    materials: ["steel", "glass"],
+                    parts: [
+                        Part(
+                            name: "tip",
+                            count: Single,
+                        ),
+                        Part(
+                            name: "edge",
+                            count: Single,
+                            // count: Double("edges", "double-edged"),
+                        )
+                    ]
+                )
+            ]
+        ),
+        fork: Item(
+            names: ("fork", "forks"),
+            // hmm weapon wants some attributes
+            kinds: ["eating_utensil", "hand_weapon", "poke"],
+            parts: [
+                Part(
+                    name: "handle",
+                    count: Single,
+                ),
+                Part(
+                    name: "tine",
+                    count: Multiple(2, 4, "tines", "#num#-tined"),
+                )
+            ],
+            materials: ["wooden", "silver"],
+        )
+    }
+)
