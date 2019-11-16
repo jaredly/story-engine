@@ -5,45 +5,9 @@ use rand::distributions::{Distribution, Uniform};
 
 mod person;
 mod knowledge;
-
-struct Edge {
-    source: usize,
-    dest: usize,
-    length: f64,
-    location: usize,
-    // other properties?
-}
-
-struct Lock {
-    is_locked: bool,
-    strength: f64,
-}
-
-struct Door {
-    is_open: bool,
-    lock: Option<Lock>
-}
-
-struct Point {
-    id: usize,
-    door: Option<Door>,
-    location: usize,
-    location_section: Option<String>,
-}
-
-struct Location {
-    name: String,
-}
-
-struct Map {
-    points: HashMap<usize, Point>,
-    edges: HashMap<usize, Edge>,
-    locations: HashMap<usize, Location>,
-    // point -> edges
-    outgoing: HashMap<usize, Vec<usize>>,
-    // point <- edges
-    incoming: HashMap<usize, Vec<usize>>,
-}
+mod events;
+mod map;
+mod world;
 
 fn generate_map() {
 }

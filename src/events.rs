@@ -13,8 +13,9 @@ pub enum Happening {
         information: Vec<crate::knowledge::Knowledge>,
     },
     Travel {
-        source: usize,
-        dest: usize,
+        // source: usize,
+        // dest: usize,
+        path: Vec<usize>,
         conveyance: Option<String>,
         // do we need that?
         manner: Option<String>,
@@ -25,6 +26,15 @@ pub enum Happening {
         person: usize,
         what: Vec<usize>,
     },
+    Bathroom {
+        bathroom: usize,
+        stall: usize,
+    },
+    Drink {
+        bathroom: usize,
+        fountain: usize,
+    },
+    // waiting in line, etc.
     Purchase {
         seller: usize,
         buyer: usize,
@@ -57,9 +67,15 @@ pub enum ObservationTarget {
     // Could also have like "the ocean" here if needed
 }
 
-pub enum Event {
+// for memory, you go back to events the person has experienced,
+// and see the associated emotions, and you can use that to influence
+// their decisions
+pub struct Event {
     id: usize,
+    participants: Vec<(usize, crate::person::Emotion)>,
     what: Happening,
     start: f64,
     end: f64,
 }
+
+// TODO write a prolog solver

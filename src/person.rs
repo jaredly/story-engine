@@ -1,7 +1,7 @@
 use strum_macros::{Display, EnumIter};
 
 #[derive(EnumIter, Display)]
-enum EmotionKind {
+pub enum EmotionKind {
     Happiness,
     Fear,
     Sadness,
@@ -11,7 +11,7 @@ enum EmotionKind {
     Confusion,
 }
 
-struct Emotion {
+pub struct Emotion {
     kind: EmotionKind,
     intensity: f64,
     triggers: Vec<usize>,
@@ -49,13 +49,18 @@ http://ideonomy.mit.edu/essays/traits.html
 
 */
 
-struct Characteristics {
+pub struct Characteristics {
     curiousity: f64,
     patience: f64,
     excitability: f64,
 }
 
-struct Person {
+pub enum Role {
+    Vendor(usize), // building id
+    Patron,
+}
+
+pub struct Person {
     id: usize,
     emotions: Vec<Emotion>,
     characteristics: Characteristics,
