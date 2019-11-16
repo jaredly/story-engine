@@ -210,20 +210,22 @@ impl Map {
         }
     }
 
-    pub fn add_point(&mut self, loc: Option<usize>) -> usize {
+    pub fn add_point(&mut self, loc: Option<usize>, pos: nalgebra::Point2<f64>) -> usize {
         let mut point = Point::default();
         point.location = loc;
+        point.pos = pos;
         let id = self.gen_id();
         point.id = id;
         self.points.insert(id, point);
         id
     }
 
-    pub fn add_building_point(&mut self, loc: usize, mut building: Building) -> (usize, usize) {
+    pub fn add_building_point(&mut self, loc: usize, pos: nalgebra::Point2<f64>, mut building: Building) -> (usize, usize) {
         let mut point = Point::default();
         point.location = Some(loc);
         let point_id = self.gen_id();
         point.id = point_id;
+        point.pos = pos;
         let id = self.gen_id();
         building.id = id;
         point.building = Some(id);
@@ -234,6 +236,21 @@ impl Map {
 
     pub fn point(&self, id: usize) -> Option<&Point> {
         self.points.get(&id)
+    }
+
+    pub fn add_edge_loc(&mut self, source: usize, dest: usize, location: usize) -> usize {
+        let p1 = self.point(source).unwrap();
+        let p2 = self.point(dest).unwrap();
+        let length = nalgebra::distance(&p1.pos, &p2.pos);
+        self.add_full_edge(Edge {
+            id: 0,
+            source,
+            dest,
+            length,
+            location,
+            source_door: None,
+            dest_door: None,
+        })
     }
 
     pub fn add_edge(&mut self, source: usize, dest: usize) -> usize {

@@ -76,21 +76,21 @@ impl World {
 Food place
 
 ___
-(i) monkeys
+(i) monkeys // 0,0
 |
 |
-(h)
+(h)         // 0,1
 ---
 |
 | simian trail
 |
-* (a)
+* (a)       // 0,2
   \
    \ 
-    [donuts] (b)j
+    [donuts] (b) // 1,3
     |\
     | \
-    |  * (c) -------- [(f) ----- (g) penguins]
+    |  * (c 2,4) -------- [(f 3,4) ----- (g 4,4) penguins]
     | /      frigid walk
     |/
     [sushi] (d)
@@ -109,6 +109,10 @@ ___
 
 */
 
+fn pos(x: usize, y: usize) -> nalgebra::Point2<f64> {
+    nalgebra::Point2::new(x as f64, y as f64)
+}
+
 fn basic() -> World {
     let mut world = World::default();
 
@@ -124,9 +128,9 @@ fn basic() -> World {
     let ice_cream = world.add_food(items::food(("Ice cream cone".to_owned(), "Ice cream cones".to_owned())));
     let ice_cream_bar = world.add_food(items::food(("Ice cream bar".to_owned(), "Ice cream bars".to_owned())));
 
-    let a = world.map.add_point(None);
+    let a = world.map.add_point(None, pos(0, 2));
 
-    let b = world.map.add_building_point(food_loc, map::Building::new(
+    let b = world.map.add_building_point(food_loc, pos(1,3), map::Building::new(
         map::food_building("Ice cream shack".to_owned(), vec![
             map::FoodForSale {
                 food: ice_cream,
@@ -145,8 +149,8 @@ fn basic() -> World {
         ])
     )).0;
 
-    let c = world.map.add_point(None);
-    let d = world.map.add_building_point(food_loc, map::Building::new(
+    let c = world.map.add_point(None, pos(2,4));
+    let d = world.map.add_building_point(food_loc, pos(1,5), map::Building::new(
         map::food_building("Sushi".to_owned(), vec![
             map::FoodForSale {
                 food: sushi,
@@ -157,17 +161,17 @@ fn basic() -> World {
             }
         ])
     )).0;
-    let e = world.map.add_point(None);
-    let f = world.map.add_point(None);
-    let g = world.map.add_building_point(penguins_loc, map::Building::new(
+    let e = world.map.add_point(None, pos(0,6));
+    let f = world.map.add_point(None, pos(3,4));
+    let g = world.map.add_building_point(penguins_loc, pos(4,4), map::Building::new(
         map::exhibit("Penguins".to_owned(), "Ice sheets".to_owned())
     )).0;
-    let h = world.map.add_point(None);
-    let (i, monkeys_building) = world.map.add_building_point(monkeys_loc, map::Building::new(
+    let h = world.map.add_point(None, pos(0,1));
+    let (i, monkeys_building) = world.map.add_building_point(monkeys_loc, pos(0,0), map::Building::new(
         map::exhibit("Monkey Exhibit".to_owned(), "Trees".to_owned())
     ));
-    let j = world.map.add_point(None);
-    let k = world.map.add_point(Some(entrance_loc));
+    let j = world.map.add_point(None, pos(0,7));
+    let k = world.map.add_point(Some(entrance_loc), pos(0,8));
     let edge = map::Edge {
         id: 0,
         source: j,
@@ -182,16 +186,17 @@ fn basic() -> World {
     map::fully_conntected(&mut world.map, vec![a, b, c, d, e]);
 
     world.map.add_edge(i, h);
-    world.map.add_edge(h, a);
-    world.map.add_edge(c, f);
+    world.map.add_edge_loc(h, a, simian_trail_loc);
+    world.map.add_edge_loc(c, f, frigid_loc);
     world.map.add_edge(f, g);
-    world.map.add_edge(e, j);
+    world.map.add_edge_loc(e, j, welcome_loc);
+
+
     // world.map.add_edge(j, k);
 
     // let monkeys_building = world.map.add_building_point(i, map::Building::new(
     //     map::exhibit("Monkey Exhibit".to_owned(), "Trees".to_owned())
     // ));
-
 
     // let frigid_penguins = world.map.add_point();
 
@@ -199,8 +204,6 @@ fn basic() -> World {
     //     c,
     //     frigid_penguins
     // );
-
-
 
 
     world.add_animal(Animal::new(
