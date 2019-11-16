@@ -22,16 +22,17 @@ struct Activity {
     kind: usize,
 }
 
-struct Memory {
-    people: Vec<usize>,
-    start_time: usize,
-    end_time: usize,
-    action: usize, // was it a collective action? could be a conversation. Could be multiple people having separate conversations.
-}
+// struct Memory {
+//     people: Vec<usize>,
+//     start_time: usize,
+//     end_time: usize,
+//     action: usize, // was it a collective action? could be a conversation. Could be multiple people having separate conversations.
+// }
 
-struct Person {
-    memories: Vec<Memory>,
-}
+// struct Person {
+//     id: usize,
+//     memories: Vec<Memory>,
+// }
 
 fn generate_people() {
 }
@@ -39,7 +40,7 @@ fn generate_people() {
 fn step() {}
 
 pub struct GenericRng<T: rand::Rng> {
-    rng: T,
+    pub rng: T,
     uni: Uniform<f64>,
 }
 
@@ -54,6 +55,11 @@ impl GenericRng<rand_pcg::Pcg64Mcg> {
 
     pub fn next(&mut self) -> f64 {
         self.uni.sample(&mut self.rng)
+    }
+
+    pub fn choose<'a, T>(&mut self, items: &'a [T]) -> &'a T {
+        let index = Uniform::from(0..items.len()).sample(&mut self.rng);
+        &items[index]
     }
 }
 

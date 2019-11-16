@@ -113,7 +113,7 @@ fn pos(x: usize, y: usize) -> nalgebra::Point2<f64> {
     nalgebra::Point2::new(x as f64, y as f64)
 }
 
-fn basic() -> World {
+fn basic(rand: &mut crate::Rng) -> World {
     let mut world = World::default();
 
     let monkeys_loc = world.map.add_location("Monkeys".to_owned());
@@ -135,16 +135,16 @@ fn basic() -> World {
             map::FoodForSale {
                 food: ice_cream,
                 price: 200,
-                priceRange: (150, 350),
+                price_range: (150, 350),
                 quantity: (50, 50),
-                refillTimer: (100, 10000), // very long time
+                refill_timer: (100, 10000), // very long time
             },
             map::FoodForSale {
                 food: ice_cream_bar,
                 price: 180,
-                priceRange: (150, 350),
+                price_range: (150, 350),
                 quantity: (50, 50),
-                refillTimer: (100, 10000), // very long time
+                refill_timer: (100, 10000), // very long time
             },
         ])
     )).0;
@@ -155,9 +155,9 @@ fn basic() -> World {
             map::FoodForSale {
                 food: sushi,
                 price: 300,
-                priceRange: (250, 450),
+                price_range: (250, 450),
                 quantity: (50, 50),
-                refillTimer: (100, 10000), // very long time
+                refill_timer: (100, 10000), // very long time
             }
         ])
     )).0;
@@ -191,21 +191,6 @@ fn basic() -> World {
     world.map.add_edge(f, g);
     world.map.add_edge_loc(e, j, welcome_loc);
 
-
-    // world.map.add_edge(j, k);
-
-    // let monkeys_building = world.map.add_building_point(i, map::Building::new(
-    //     map::exhibit("Monkey Exhibit".to_owned(), "Trees".to_owned())
-    // ));
-
-    // let frigid_penguins = world.map.add_point();
-
-    // let frigid_walk = world.map.add_edge(
-    //     c,
-    //     frigid_penguins
-    // );
-
-
     world.add_animal(Animal::new(
         monkeys_building,
         AnimalKind::Monkey,
@@ -218,6 +203,21 @@ fn basic() -> World {
         monkeys_building,
         AnimalKind::Monkey,
     ));
+
+    let possible_goals = crate::person::Goal::all_goals(&world.map.exhibit_ids());
+    let possible_edges = world.map.edge_ids();
+
+    for _ in 0..200 {
+        let id = world.gen_id();
+        use crate::RandDefault;
+        let mut person = crate::person::Person::default(rand);
+        person.id = id;
+        for _ in 0..2 {
+            person.goals.push(*rand.choose(&possible_goals));
+        }
+        person.position = (*rand.choose(&possible_edges), rand.next());
+        world.people.insert(id, person);
+    }
 
     world
 }

@@ -108,16 +108,16 @@ pub struct FoodForSale {
     pub food: usize,
     // pub food: String,
     pub price: usize, // in cents
-    pub priceRange: (usize, usize),
+    pub price_range: (usize, usize),
     pub quantity: (usize, usize),
-    pub refillTimer: (usize, usize),
+    pub refill_timer: (usize, usize),
 }
 
 // impl FoodForSale {
 //     fn new(rand: crate::Rng) -> Self {
 //         FoodForSale {
 //             food: 0,
-//             priceRange
+//             price_range
 //         }
 //     }
 // }
@@ -195,6 +195,16 @@ impl Map {
     fn gen_id(&mut self) -> usize {
         self.last_id += 1;
         self.last_id
+    }
+
+    pub fn exhibit_ids(&self) -> Vec<usize> {
+        self.buildings.values().filter_map(|b| if let BuildingKind::Exhibit {..} = b.kind {
+            Some(b.id)
+        } else {None}).collect::<Vec<usize>>()
+    }
+
+    pub fn edge_ids(&self) -> Vec<usize> {
+        self.edges.keys().map(|x| *x).collect()
     }
 
     pub fn add_location(&mut self, name: String) -> usize {
