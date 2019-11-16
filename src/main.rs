@@ -8,6 +8,7 @@ mod knowledge;
 mod events;
 mod map;
 mod world;
+mod items;
 
 fn generate_map() {
 }
