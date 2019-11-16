@@ -1,0 +1,26 @@
+{
+    emotions: {
+        happiness,
+        fear,
+        sadness,
+        anger,
+        lonliness,
+        // emotions have an intensity, and maybe a duration?
+        // and probably alos a "reason", which could be as simple
+        // as an event id I guess
+    },
+    characteristics: {
+        ummmmm
+        maybe I hsould just hardcode, and then worry about abstracting
+        after I've had any experiecne at all making it work.
+    },
+    properties: {
+        emotions: [],
+    },
+    presets: {
+        child: ActorPreset(
+        ),
+        adult: ActorPreset(
+        )
+    }
+}

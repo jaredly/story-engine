@@ -49,6 +49,19 @@ ItemEncyclopedia(
             melting_point: 100,
             damaged: ["half-eaten"],
             quality: ["hard", "soft", "moldy", "fine"],
+        ),
+        butter: Material(
+            name: "butter",
+            adj: "butter",
+            melting_point: 70,
+            damage: ["dirty"],
+            quality: ["cow's", "goat's", "sheep's"]
+        ),
+        clotton_cloth: Material(
+            name: "cloth",
+            adj: "cotton",
+            flammability: 0.7,
+            damage: ["dirty", "ripped", "torn", "tattered", "patched"]
         )
     },
     items: {

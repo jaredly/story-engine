@@ -8,10 +8,13 @@ edition = "2018"
 
 [dependencies]
 ron = "*"
-rand = "*"
-rand_chacha = "*"
-rand_core = "*"
+rand = "0.7.2"
+rand_pcg = "0.2.1"
+rand_core = "0.5.1"
 serde = "*"
 nalgebra = { version = "0.18", features = ["serde-serialize"] }
 perlin_noise = "*"
 arrayvec = {version="*", features=["serde-1"] }
+
+strum = "0.16.0"
+strum_macros = "0.16.0"

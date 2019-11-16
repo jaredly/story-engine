@@ -1,6 +1,10 @@
 
 #![allow(dead_code)]
 use std::collections::HashMap;
+use rand::distributions::{Distribution, Uniform};
+
+mod person;
+mod knowledge;
 
 struct Edge {
     source: usize,
@@ -44,6 +48,11 @@ struct Map {
 fn generate_map() {
 }
 
+struct ActivityKind {
+    solo: bool,
+    time_range: (usize, usize),
+}
+
 struct Activity {
     kind: usize,
 }
@@ -64,9 +73,40 @@ fn generate_people() {
 
 fn step() {}
 
+pub struct GenericRng<T: rand::Rng> {
+    rng: T,
+    uni: Uniform<f64>,
+}
+
+impl GenericRng<rand_pcg::Pcg64Mcg> {
+    fn new(seed: u64) -> Self {
+        use rand_core::SeedableRng;
+        Rng {
+            rng: rand_pcg::Pcg64Mcg::seed_from_u64(seed),
+            uni: Uniform::from(0.0..1.0)
+        }
+    }
+
+    pub fn next(&mut self) -> f64 {
+        self.uni.sample(&mut self.rng)
+    }
+}
+
+pub type Rng = GenericRng<rand_pcg::Pcg64Mcg>;
+
+pub trait RandDefault {
+    fn default(rng: &mut Rng) -> Self;
+}
+
 fn main() {
+    let mut rand = Rng::new(0);
+    println!("{} - {} - {}", rand.next(), rand.next(), rand.next());
     // use rand::SeedableRng;
-    use rand_core::SeedableRng;
-    let gen = rand_chacha::ChaChaRng::seed_from_u64(0);
+    // let between = Uniform::from(0.0..1.0);
+    // // rand_pcg::Pcg64Mcg
+    // let gen = rand_pcg::Pcg64Mcg// Lcg128Xsl64
+    // //  rand_chacha::ChaChaRng
+    //  ::seed_from_u64(0);
     println!("Hello, world!");
 }
+

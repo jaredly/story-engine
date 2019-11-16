@@ -1,0 +1,36 @@
+{
+    eat: Activity(
+        item_consumed: ["food"],
+    ),
+    // emotional response
+        // if it contains food you don't like, negative
+        // but v0, all food is liked
+    // attribute change
+    // hunger goes down, energy goes up
+    // if food is alcoholic, add effect inebriation (lower focus, energy, insomnia, inhibitions)
+    // if has caffeine, add effect caffinated (higher focus, energy, insomnia)
+}
+// food preferences!
+// high likelihood of sharing food preferences with family
+// but some random assignment
+// three categories, picky eater, omnivore, normal. 
+// omnivore has no dislikes, picky eater has many dislikes, normal has some
+
+
+// should I have a "knowledges" or something? knowledge_types?
+    // ah but hearing about a thing is different from experiencing it.
+    // I should distinguish between levels of 1st, 2nd hand etc.
+Route { source, dest, danger_level }
+Place { name, relative_to, danger_level } // not just level, but like "bandits"
+Food { tastiness, location, name }
+PersonLocation {name, location}
+PersonSickness {name, type}
+PersonPreference { location/food/activity, preference 0.0-1.0}
+
+// ummm how far do we go with knowledge of things?
+// like "I know that you know about x, so I don't have to introduce it"
+// maybe a "we've discussed x" would do the trick.
+
+// Sickness { person, name }
+// Person { name, location }
+// all of these knowledges would have a timestamp, and probably an expiration type thing
