@@ -1,4 +1,5 @@
 
+#[derive(Debug)]
 pub enum Happening {
     // maybe superfluous
     // Tell {
@@ -64,6 +65,7 @@ pub enum Happening {
     }
 }
 
+#[derive(Debug)]
 pub enum ObservationTarget {
     Person(usize),
     Animal(usize),
@@ -74,6 +76,7 @@ pub enum ObservationTarget {
 // for memory, you go back to events the person has experienced,
 // and see the associated emotions, and you can use that to influence
 // their decisions
+#[derive(Debug)]
 pub struct Event {
     pub id: usize,
     pub participants: Vec<(usize, crate::person::Emotion)>,

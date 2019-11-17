@@ -33,7 +33,7 @@ http://ideonomy.mit.edu/essays/traits.html
 
 */
 
-#[derive(EnumIter, Display, Clone, Copy)]
+#[derive(EnumIter, Display, Clone, Copy, Debug)]
 pub enum EmotionKind {
     Happiness,
     Fear,
@@ -51,6 +51,7 @@ impl EmotionKind {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Emotion {
     pub kind: EmotionKind,
     pub intensity: f64,
@@ -69,18 +70,20 @@ impl Emotion {
     }
 }
 
+#[derive(Debug)]
 pub struct Characteristics {
     curiousity: f64,
     patience: f64,
     excitability: f64,
 }
 
+#[derive(Debug)]
 pub enum Role {
     Vendor(usize), // building id
     Patron,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum Goal {
     Eat,
     ViewExhibit(usize),
@@ -100,8 +103,10 @@ impl Goal {
     }
 }
 
+#[derive(Debug)]
 pub struct Person {
     pub id: usize,
+    pub name: String,
     pub age: u8,
     pub emotions: Vec<Emotion>,
     pub stamina: f64,
@@ -143,6 +148,12 @@ impl crate::RandDefault for Person {
     fn default(rand: &mut crate::Rng) -> Self {
         Person {
             id: 0,
+            name: (*rand.choose(&vec![
+                "Sarah",
+                "Jared",
+                "Micheal",
+                "June",
+            ])).into(),
             age: Uniform::new(4, 40).sample(&mut rand.rng),
             position: (0, 0.0),
             goals: vec![ ],

@@ -1,4 +1,5 @@
 
+#[derive(Debug)]
 pub struct Food {
     pub id: usize,
     pub name: (String, String),

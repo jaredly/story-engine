@@ -71,7 +71,9 @@ pub trait RandDefault {
 fn main() {
     let mut rand = Rng::new(0);
     let world = world::zoo(&mut rand);
-    println!("{} - {} - {}", rand.next(), rand.next(), rand.next());
+    for person in world.people {
+        println!("Person: {:?}", person);
+    }
     // use rand::SeedableRng;
     // let between = Uniform::from(0.0..1.0);
     // // rand_pcg::Pcg64Mcg

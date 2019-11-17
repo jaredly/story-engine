@@ -1,5 +1,6 @@
 
 
+#[derive(Debug)]
 pub enum Knowable {
     Directions { source: usize, dest: usize, path: Vec<usize> },
     // maybe have PersonFact, where you know something about the
@@ -16,6 +17,7 @@ pub enum Knowable {
     // came to be. Or I assume, from my other knowledge.
 }
 
+#[derive(Debug)]
 pub enum KnowledgeSource {
     // if none, that person dodn't tell me where they got it from
     Person(usize, Option<Box<KnowledgeSource>>),
@@ -23,6 +25,7 @@ pub enum KnowledgeSource {
     Experience(usize),
 }
 
+#[derive(Debug)]
 pub struct Knowledge {
     pub id: usize,
     pub item: Knowable,

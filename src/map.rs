@@ -268,7 +268,8 @@ impl Map {
         let p2 = self.point(dest).unwrap();
         let length = nalgebra::distance(&p1.pos, &p2.pos);
         let location = match (p1.location, p2.location) {
-            (None, None) => panic!("Adding an edge to two locationless points. Use add_full_edge"),
+            (None, None) => 
+            panic!("Adding an edge to two locationless points ({} and {}). Use add_full_edge", source, dest),
             (Some(loc), _) => loc,
             (_, Some(loc)) => loc,
         };
@@ -293,10 +294,10 @@ impl Map {
     }
 }
 
-pub fn fully_conntected(map: &mut Map, points: Vec<usize>) {
+pub fn fully_conntected(map: &mut Map, points: Vec<usize>, loc: usize) {
     for (i, p) in points.iter().enumerate() {
-        for p2 in points[i..].iter() {
-            map.add_edge(*p, *p2);
+        for p2 in points[i+1..].iter() {
+            map.add_edge_loc(*p, *p2, loc);
         }
     }
 }
