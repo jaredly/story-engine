@@ -1,4 +1,6 @@
 use strum_macros::{Display, EnumIter};
+use crate::{events, knowledge};
+
 
 // DND has
 /*
@@ -31,7 +33,7 @@ http://ideonomy.mit.edu/essays/traits.html
 
 */
 
-#[derive(EnumIter, Display)]
+#[derive(EnumIter, Display, Clone, Copy)]
 pub enum EmotionKind {
     Happiness,
     Fear,
@@ -42,11 +44,29 @@ pub enum EmotionKind {
     Confusion,
 }
 
+impl EmotionKind {
+    fn random(rand: &mut crate::Rng) -> Self {
+        use strum::IntoEnumIterator;
+        *rand.choose(&Self::iter().collect::<Vec<Self>>())
+    }
+}
+
 pub struct Emotion {
-    kind: EmotionKind,
-    intensity: f64,
-    triggers: Vec<usize>,
-    duration: f64,
+    pub kind: EmotionKind,
+    pub intensity: f64,
+    pub triggers: Vec<usize>, // an event id probably
+    pub duration: usize,
+}
+
+impl Emotion {
+    pub fn random(rand: &mut crate::Rng) -> Self {
+        Emotion { 
+            kind: EmotionKind::random(rand),
+            intensity: 0.5,
+            triggers: vec![],
+            duration: 100,
+        }
+    }
 }
 
 pub struct Characteristics {
@@ -93,6 +113,21 @@ pub struct Person {
 }
 
 impl Person {
+    // fn decide_on_goal(&mut self, goal: Goal) -> events::Event {
+    //     self.goals.push(goal);
+    // }
+    pub fn experience_event(&mut self, id: usize, time: usize) {
+        self.knowledge.push(knowledge::Knowledge {
+            id: 0, // tODO
+            learned_time: time,
+            item: knowledge::Knowable::Experience(id),
+            source: knowledge::KnowledgeSource::Experience(id),
+            reliability: 1.0, // TODO modulate based on characteristics
+            memorability: 1.0, // umm
+            confidence: 1.0, // umm
+            suprisingness: 0.0, // umm
+        })
+    }
     // fn add_random_goal(&mut self, rand: &mut crate::Rng) {
     //     let goal = *rand.choose(&vec![
     //         Goal::Eat,

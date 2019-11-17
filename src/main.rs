@@ -1,6 +1,5 @@
 
 #![allow(dead_code)]
-use std::collections::HashMap;
 use rand::distributions::{Distribution, Uniform};
 
 mod person;
@@ -71,6 +70,7 @@ pub trait RandDefault {
 
 fn main() {
     let mut rand = Rng::new(0);
+    let world = world::zoo(&mut rand);
     println!("{} - {} - {}", rand.next(), rand.next(), rand.next());
     // use rand::SeedableRng;
     // let between = Uniform::from(0.0..1.0);

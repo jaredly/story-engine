@@ -57,6 +57,10 @@ pub enum Happening {
     Observe {
         person: usize,
         targets: Vec<ObservationTarget>,
+    },
+    Decide {
+        person: usize,
+        goal: crate::person::Goal,
     }
 }
 
@@ -71,11 +75,11 @@ pub enum ObservationTarget {
 // and see the associated emotions, and you can use that to influence
 // their decisions
 pub struct Event {
-    id: usize,
-    participants: Vec<(usize, crate::person::Emotion)>,
-    what: Happening,
-    start: f64,
-    end: f64,
+    pub id: usize,
+    pub participants: Vec<(usize, crate::person::Emotion)>,
+    pub what: Happening,
+    pub start: usize,
+    pub end: usize,
 }
 
 // TODO write a prolog solver

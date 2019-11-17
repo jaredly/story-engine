@@ -24,12 +24,13 @@ pub enum KnowledgeSource {
 }
 
 pub struct Knowledge {
-    id: usize,
-    item: Knowable,
-    source: KnowledgeSource,
-    reliability: f64, // of the source, maybe?
-    memorability: f64,
-    confidence: f64, // maybe redundant
-    suprisingness: f64, // or something. novelty?
+    pub id: usize,
+    pub item: Knowable,
+    pub source: KnowledgeSource,
+    pub reliability: f64, // of the source, maybe?
+    pub memorability: f64,
+    pub confidence: f64, // maybe redundant
+    pub suprisingness: f64, // or something. novelty?
+    pub learned_time: usize,
     // this will impact memorability. or maybe that's handled already?
 }

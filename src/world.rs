@@ -1,8 +1,9 @@
 
 use std::collections::HashMap;
 use crate::map::{self, Map};
-use crate::person::Person;
+use crate::person::{Person, Emotion};
 use crate::items::{self, Food};
+use crate::events::Event;
 
 pub enum AnimalKind {
     Monkey,
@@ -24,10 +25,12 @@ impl Animal {
 #[derive(Default)]
 pub struct World {
     last_id: usize,
+    time: usize, // ticks, in increments of like 15 minutes probably, or something.
     map: Map,
     foods: HashMap<usize, Food>,
     animals: HashMap<usize, Animal>,
     people: HashMap<usize, Person>,
+    events: HashMap<usize, Event>,
 }
 
 impl World {
@@ -39,11 +42,42 @@ impl World {
     fn with_map(map: Map) -> Self {
         World {
             last_id: 0,
+            time: 0,
             map,
+            events: HashMap::default(),
             foods: HashMap::default(),
             animals: HashMap::default(),
             people: HashMap::default(),
         }
+    }
+
+    fn add_person_goal(&mut self, pid: usize,
+                       goal: crate::person::Goal,
+                       emotion: crate::person::Emotion,
+                       decision_start: usize) {
+        self.people.get_mut(&pid).unwrap().goals.push(goal);
+        self.add_event(crate::events::Event {
+            id: 0,
+            participants: vec![(pid, emotion)],
+            what: crate::events::Happening::Decide {person: pid, goal},
+            start: decision_start,
+            end: self.time
+        });
+        // self.people.get_mut(&pid).unwrap().experience_event(event, self.time)
+    }
+
+    fn add_event(&mut self, mut event: Event) -> usize {
+        let id = self.gen_id();
+        event.id = id;
+        for (pid, emotion) in &mut event.participants {
+            emotion.triggers.push(id);
+            self.people.get_mut(&pid).unwrap().experience_event(id, self.time);
+        }
+        self.events.insert(id, event);
+
+        id
+            // let goal = *rand.choose(&possible_goals);
+            // person.goals.push(goal);
     }
 
     fn add_animal(&mut self, mut animal: Animal) -> usize {
@@ -113,7 +147,7 @@ fn pos(x: usize, y: usize) -> nalgebra::Point2<f64> {
     nalgebra::Point2::new(x as f64, y as f64)
 }
 
-fn basic(rand: &mut crate::Rng) -> World {
+pub fn zoo(rand: &mut crate::Rng) -> World {
     let mut world = World::default();
 
     let monkeys_loc = world.map.add_location("Monkeys".to_owned());
@@ -212,11 +246,13 @@ fn basic(rand: &mut crate::Rng) -> World {
         use crate::RandDefault;
         let mut person = crate::person::Person::default(rand);
         person.id = id;
-        for _ in 0..2 {
-            person.goals.push(*rand.choose(&possible_goals));
-        }
         person.position = (*rand.choose(&possible_edges), rand.next());
         world.people.insert(id, person);
+        for _ in 0..2 {
+            let goal = *rand.choose(&possible_goals);
+            // person.goals.push(goal);
+            world.add_person_goal(id, goal, Emotion::random(rand), world.time);
+        }
     }
 
     world
