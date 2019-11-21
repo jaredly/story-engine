@@ -84,20 +84,85 @@ pub enum Role {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub enum Goal {
-    Eat,
+pub enum GoalKind {
+    Eat, // gotopoint, buyandeatfood (choose the vendor & food when you get there), buyfood, eatfood
     ViewExhibit(usize),
     Leave,
 }
 
+
+#[derive(Debug)]
+pub enum SubGoal {
+    Eat {
+        /*
+        # Obtain Food (if you posess food, you're done)
+        ## ChooseFoodLocation
+        - get the knowledge of places to eat (if you don't have it) and their locations
+          - if you have a map, that works
+          - otherwise you can ask someone
+          - or you can give up
+        - choose one of those locations
+        ## GoToLocation
+        - obtain the knowledge of how to get there (PathFind)
+        - walk there
+        # Eat food
+        - this is an activity
+        */
+    },
+    GoToPoint { point: usize },
+    BuyAndEatFood { vendor: usize },
+    // subsubgoals - buy a food, eat that food
+    BuyFood { food: usize },
+    EatFood { food: usize },
+}
+
+impl GoalKind {
+    pub fn as_goal(self) -> Goal {
+        Goal {
+            kind: self,
+            achieved: false,
+            expanded: None
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Goal {
+    kind: GoalKind,
+    achieved: bool,
+    expanded: Option<Vec<SubGoal>>,
+    // sub_goals: Vec<SubGoal>,
+}
+
 impl Goal {
-    pub fn all_goals(exhibits: &[usize]) -> Vec<Goal> {
+    fn statuses(&self) -> Vec<bool> {
+        let mut statuses = vec![vec![self.achieved]];
+        statuses.append(&mut self.sub_goals.iter().map(|goal|goal.statuses()).collect());
+        statuses.concat()
+    }
+
+    fn progress(&self) -> f64 {
+        let mut total = 0;
+        let mut achieved = 0;
+        let statuses = self.statuses();
+        for status in statuses {
+            if status {
+                achieved += 1;
+            }
+            total += 1;
+        }
+        return achieved as f64 / total as f64
+    }
+}
+
+impl GoalKind {
+    pub fn all_goals(exhibits: &[usize]) -> Vec<GoalKind> {
         let mut goals = vec![
-            Goal::Eat,
-            Goal::Leave,
+            GoalKind::Eat,
+            GoalKind::Leave,
         ];
         for id in exhibits {
-            goals.push(Goal::ViewExhibit(*id));
+            goals.push(GoalKind::ViewExhibit(*id));
         }
         goals
     }

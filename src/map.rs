@@ -66,6 +66,18 @@ pub struct Edge {
     // other properties?
 }
 
+impl Edge {
+    fn door_at(&self, point: usize) -> Option<Door> {
+        if point == self.source {
+            self.source_door
+        } else if point == self.dest {
+            self.dest_door
+        } else {
+            None // umm
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Point {
     id: usize,
@@ -195,6 +207,30 @@ impl Map {
     fn gen_id(&mut self) -> usize {
         self.last_id += 1;
         self.last_id
+    }
+
+    pub fn exits(&self) -> Vec<usize> {
+        let mut exits = vec![];
+        for (k, vs) in self.outgoing {
+            if vs.len() != 1 {
+                continue
+            }
+            let point = self.points.get(&k).unwrap();
+
+            // exits don't currently have buildings
+            if point.building.is_some() {
+                continue;
+            }
+
+            let edge = self.edges.get(&vs[0]).unwrap();
+            if let Some(door) = edge.door_at(k) {
+                exits.push(k)
+            }
+        }
+        if exits.len() == 0 {
+            panic!("No exits found in map");
+        }
+        exits
     }
 
     pub fn exhibit_ids(&self) -> Vec<usize> {

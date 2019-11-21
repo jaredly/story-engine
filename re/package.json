@@ -1,0 +1,12 @@
+{
+  "name": "story-engine",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "bs-css": "^11.0.0",
+    "bs-platform": "^5.2.1",
+    "let-anything": "^1.0.3",
+    "reason-react": "^0.7.0"
+  }
+}

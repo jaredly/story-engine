@@ -293,7 +293,7 @@ pub fn zoo(rand: &mut crate::Rng) -> World {
     world.add_animal(Animal::new(gorillas_building, AnimalKind::Gorilla));
     world.add_animal(Animal::new(gorillas_building, AnimalKind::Gorilla));
 
-    let possible_goals = crate::person::Goal::all_goals(&world.map.exhibit_ids());
+    let possible_goals = crate::person::GoalKind::all_goals(&world.map.exhibit_ids());
     let possible_edges = world.map.edge_ids();
 
     for _ in 0..10 {
@@ -306,7 +306,7 @@ pub fn zoo(rand: &mut crate::Rng) -> World {
         for _ in 0..2 {
             let goal = *rand.choose(&possible_goals);
             // person.goals.push(goal);
-            world.add_person_goal(id, goal, Emotion::random(rand), world.time);
+            world.add_person_goal(id, goal.as_goal(), Emotion::random(rand), world.time);
         }
     }
 

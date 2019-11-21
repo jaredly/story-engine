@@ -1,0 +1,21 @@
+{
+  "name": "story-engine",
+  "reason": {
+    "react-jsx": 3
+  },
+  "sources": {
+    "dir" : "src",
+    "subdirs" : true
+  },
+  "package-specs": [{
+    "module": "commonjs",
+    "in-source": true
+  }],
+  "ppx-flags": ["let-anything/ppx"],
+  "suffix": ".bs.js",
+  "bs-dependencies": [
+    "reason-react",
+    "bs-css"
+  ],
+  "refmt": 3
+}
