@@ -9,7 +9,21 @@ let idGenerator = () => {
     }
 };
 let genId = idGenerator();
+let empty = Belt.Map.Int.empty;
+
+let map = {
+    let map = {
+        points:empty,
+        locations:empty,
+        edges:empty,
+    };
+    map
+}
+
 
 let world: world = {
-    people: Belt.Map.Int.emty
+    people: empty,
+    animals: empty,
+    items: empty,
+    map
 }
