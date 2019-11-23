@@ -15,6 +15,7 @@ ctx->Canvas.Ctx.setFillStyle("black");
 ctx->Canvas.Ctx.fillRect(0.0, 0.0, size, size);
 
 ctx->Canvas.Ctx.setStrokeStyle("red");
+ctx->Canvas.Ctx.setLineWidth(4.0);
 for (i in 0 to Array.length(triangles)/3 - 1) {
     ctx->Canvas.Ctx.beginPath;
     ctx->Canvas.Ctx.line(
@@ -31,6 +32,8 @@ for (i in 0 to Array.length(triangles)/3 - 1) {
     );
     ctx->Canvas.Ctx.stroke;
 }
+
+// ctx->Canvas.Ctx.setLineWidth(1.0);
 
 ctx->Canvas.Ctx.setStrokeStyle("white");
 
@@ -56,9 +59,9 @@ values->Belt.Array.forEachWithIndex((index, point) => {
     if (!touchesClip) {
         drawPoly(poly);
         ctx->Canvas.Ctx.beginPath;
-        let (x, y) = point;
-        ctx->Canvas.Ctx.circle(x, y, 5.0);
-        ctx->Canvas.Ctx.fill;
+        // let (x, y) = point;
+        // ctx->Canvas.Ctx.circle(x, y, 5.0);
+        // ctx->Canvas.Ctx.fill;
     }
 });
 

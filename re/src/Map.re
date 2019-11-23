@@ -17,7 +17,7 @@ module Location = {
 
 module Edge = {
 
-    type lock ={
+    type lock = {
         is_locked: bool,
         strength: float,
     }
