@@ -6,7 +6,14 @@
   "dependencies": {
     "bs-css": "^11.0.0",
     "bs-platform": "^5.2.1",
+    "d3-delaunay": "^5.1.6",
+    "delaunator": "^4.0.1",
     "let-anything": "^1.0.3",
+    "poisson-disk-sampling": "^1.0.6",
+    "prando": "^5.1.1",
     "reason-react": "^0.7.0"
+  },
+  "devDependencies": {
+    "parcel": "^1.12.4"
   }
 }

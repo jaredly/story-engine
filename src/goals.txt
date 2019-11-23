@@ -1,0 +1,46 @@
+
+leave -> exit=find_exit -> go_to(exit)
+=find_exit -> assert_has(map) -> exits=read_map(is_exit) -> =choose(exits, nearest)
+go_to(point) -> path=path_find(point) -> follow_path(path)
+
+eat -> food=obtain_food -> eat_food(food)
+=obtain_food -> location=choose_food_location -> go_to(location) -> =buy_food(location)
+=choose_food_location -> places=obtain_knowledge_of_food_places -> =choose(places)
+=obtain_knowledge_of_food_places -> =get_knowledge(building, is_food)
+=obtain_knowledge_of_food_places -> =look_around(building, is_food)
+=obtain_knowledge_of_food_places -> person=look_around(person, is_official) -> =request_knowledge(building, is_food)
+
+// built in things probably
+=path_find
+follow_path(path)
+assert_has(item_kind)
+=read_map(condition)
+=choose(list, sort?)
+
+
+
+
+
+
+Eat -> ObtainFood, EatFood
+ObtainFood -> assert food in inventory
+ObtainFood -> ChooseFoodLocation, GoToLocation, BuyFood
+ChooseFoodLocation -> ObtainKnowledgeOfFoodPlaces, ChooseBetweenFoodPlaces
+ObtainKnowledgeOfFoodPlaces -> assert knowledge of at least one food place
+ObtainKnowledgeOfFoodPlaces -> look around, if see some food places, you're done
+ObtainKnowledgeOfFoodPlaces -> assert map in inventory, read map
+ObtainKnowledgeOfFoodPlaces -> see someone official in proximity, ask them
+GoToLocation -> PathFind, FollowPath
+PathFind -> assert knowledge of path
+PathFind -> assert map in inventory, inspect map
+PathFind -> assert official person close, ask them
+
+Root -> if hunger > 50%, Eat
+Root -> Wander
+Root -> Leave
+Root -> PickExhibit
+(if they have >50% hunger, but Eat isn't chosen, then have text like "even though she was hungry, she really wanted to see the hippos.")
+
+Now, if you're in a group, this probably gets a lot more complicated.
+Like, the parent asks the child if they want to pick an exhibit, and if they have knowledge
+of any, then they pick that.
