@@ -4,7 +4,7 @@ FLG -ppx '/Users/jared/clone/games/story-engine/re/node_modules/bs-platform/lib/
 S /Users/jared/clone/games/story-engine/re/node_modules/bs-platform/lib/ocaml
 B /Users/jared/clone/games/story-engine/re/node_modules/bs-platform/lib/ocaml
 FLG -nostdlib
-FLG -w -30-40+6+7+27+32..39+44+45+101
+FLG -w -30-40+6+7+27+32..39+44+45+101-44-45
 S /Users/jared/clone/games/story-engine/re/node_modules/reason-react/lib/ocaml
 B /Users/jared/clone/games/story-engine/re/node_modules/reason-react/lib/ocaml
 S /Users/jared/clone/games/story-engine/re/node_modules/bs-css/lib/ocaml

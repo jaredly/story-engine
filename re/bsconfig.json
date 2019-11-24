@@ -3,6 +3,9 @@
   "reason": {
     "react-jsx": 3
   },
+  "warnings": {
+    "number": "-44-45"
+  },
   "sources": {
     "dir" : "src",
     "subdirs" : true
@@ -13,6 +16,7 @@
   }],
   "ppx-flags": ["let-anything/ppx"],
   "suffix": ".bs.js",
+  "bsc-flags": ["-bs-g"],
   "bs-dependencies": [
     "reason-react",
     "bs-css"
