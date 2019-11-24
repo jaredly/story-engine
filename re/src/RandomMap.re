@@ -1,4 +1,11 @@
 
+[@bs.module]
+[@bs.val]
+external animals: array({.
+  "name": string,
+  "href": string
+}) = "../animals.json";
+
 let shuffle = (points, rng) => {
   let ln = Array.length(points);
   let rec loop = (index) => {
@@ -77,13 +84,15 @@ let gen = (size, minDist, maxDist, rng) => {
   let buildings = buildingPoints
   ->Belt.Array.reduce(Belt.Map.Int.empty, (map, idx) => {
     let id = genId();
+    let aidx = rng->Prando.int(0, Array.length(animals));
+    let animal = animals->Js.Array2.spliceInPlace(~pos=aidx, ~remove=1, ~add=[||])[0];
     map->Belt.Map.Int.set(id, {
       Types.Map.point: idx,
       id,
       kind:
         Exhibit(
           Belt.Set.Int.empty,
-          "Giraffe exhibit",
+          animal##name ++ " exhibit",
           "grass and tall trees",
         ),
     })
