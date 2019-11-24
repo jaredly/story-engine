@@ -1,7 +1,8 @@
 
 let map = (ctx: Canvas.ctx, map: Types.Map.map) => {
     open Canvas.Ctx;
-    ctx->setStrokeStyle("green");
+    ctx->setStrokeStyle("#ccc");
+    ctx->setLineWidth(4.0);
     map.edges->Belt.Map.Int.forEach((_key, v) => {
         let p1 = map.points->Belt.Map.Int.getExn(v.source).pos;
         let p2 = map.points->Belt.Map.Int.getExn(v.dest).pos;
@@ -10,7 +11,7 @@ let map = (ctx: Canvas.ctx, map: Types.Map.map) => {
         ctx->stroke;
     });
 
-    ctx->setFillStyle("blue");
+    ctx->setFillStyle("#ccc");
     map.points->Belt.Map.Int.forEach((_key, v) => {
         // let p1 = map.points->Belt.Map.Int.getExn(v.source).pos;
         // let p2 = map.points->Belt.Map.Int.getExn(v.dest).pos;
@@ -24,7 +25,8 @@ let map = (ctx: Canvas.ctx, map: Types.Map.map) => {
     map.buildings->Belt.Map.Int.forEach((_, b) => {
         let (x, y) = map.points->Belt.Map.Int.getExn(b.point).pos;
         ctx->beginPath;
-        ctx->circle(x +. 2.0, y +. 2.0, 2.0);
+        // ctx->circle(x +. 2.0, y +. 2.0, 2.0);
+        ctx->circle(x, y, 2.0);
         ctx->fill;
     })
 }
@@ -43,7 +45,7 @@ let world = (ctx, world: Types.world) => {
     ctx->map(world.map);
     open Belt.Map.Int;
     open Canvas.Ctx;
-    ctx->setFillStyle("red");
+    ctx->setFillStyle("#777");
     world.people->Belt.Map.Int.forEach((_, person) => {
         let edge = world.map.edges->getExn(person.position.edge);
         let p1 = world.map.points->getExn(edge.source);

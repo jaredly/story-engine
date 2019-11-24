@@ -239,6 +239,7 @@ module Updates = {
     let addGoal = (id, goal): worldUpdate => {
         Person(id, AddGoal(goal))
     }
+    let removePerson = id => Person(id, Remove)
 }
 
 let closestPoint = (person, map) => {

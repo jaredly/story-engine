@@ -46,14 +46,21 @@ let processPersonUpdate = (_world, person, update: Types.personUpdate) => {
 }
 
 let processUpdate = (world, update: Types.worldUpdate) => switch update {
+  | Person(id, Remove) => world.people = world.people->remove(id)
   | Person(id, personUpdate) => 
-  // Js.log2("Person update", personUpdate)
-  world.people = world.people->set(id, processPersonUpdate(
-    world,
-    world.people->getExn(id),
-    personUpdate
-  ))
-  | Message(message) => Js.log(message)
+    switch (world.people->get(id)) {
+      | None => ()
+      | Some(person) =>
+        world.people = world.people->set(id, processPersonUpdate(
+          world,
+          person,
+          personUpdate
+        ))
+    }
+  | Message(message) => {
+    Js.log(message);
+    ()
+  }
   | _ => failwith("nope")
 }
 
@@ -79,16 +86,22 @@ let step = world => {
     world->addPerson;
   }
   let changes = world.people->keysToArray->Belt.Array.reduce([], (changes, pid) => {
-    let person = world.people->getExn(pid);
-    let (person, updates) = Person.step(world, person);
-    world.people = world.people->set(pid, person);
-    changes @ updates
+    switch (world.people->get(pid)) {
+      | None => changes
+      | Some(person) =>
+        let (person, updates) = Person.step(world, person);
+        world.people = world.people->set(pid, person);
+        changes @ updates
+    }
   });
   // Js.log2("Changes", List.length(changes))
   changes->Belt.List.forEach((((message, update)) => {
     switch message {
       | None => ()
-      | Some(message) => Js.log(message)
+      | Some(message) => {
+        Js.log(message);
+        ()
+      }
     };
     world->processUpdate(update)
   }));

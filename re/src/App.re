@@ -18,4 +18,4 @@ Js.Global.setInterval(() => {
     world->World.step
     ctx->Canvas.Ctx.clearRect(0.0, 0.0, 50.0, 50.0);
     ctx->Draw.world(world)
-}, 100)
+}, 50)

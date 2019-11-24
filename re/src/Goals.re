@@ -52,22 +52,26 @@ let point = (position, edge: Types.Map.edge) =>
   position.progress < 0.5 ? edge.source : edge.dest;
 
 let watchTheAnimals = (world, person, bid) => {
-  let (name, terrain) = switch (world.map.buildings->Belt.Map.Int.getExn(bid).kind) {
+  let (name, terrain) =
+    switch (world.map.buildings->Belt.Map.Int.getExn(bid).kind) {
     | Exhibit(_, name, terrain) => (name, terrain)
     | _ => assert(false)
-  };
+    };
   Types.Goal(
     0,
-    (time, person, world) => {
+    (time, person, world) =>
       // TODO check their patience, etc.
       if (time > 20) {
-        (time, Succeeded(person.name ++ " was satisfied with the " ++ name), [])
+        (
+          time,
+          Succeeded(person.name ++ " was satisfied with the " ++ name),
+          [],
+        );
       } else {
         let num = world.rng->Prando.int(2, 10);
-        (time + num, InProcess(num), [])
-      }
-    }
-  )
+        (time + num, InProcess(num), []);
+      },
+  );
 };
 
 let goToPoint = (world, person, pid) => {
@@ -149,23 +153,27 @@ let mapSuccess = (goal, map) =>
   );
 
 let chainGoals = (Goal(adata, afn), Goal(bdata, bfn), transitionMessage) =>
-    Goal(
-      (false, adata, bdata),
-      ((second, adata, bdata), person, world) =>
-        if (!second) {
-          let (adata, result, changes) = afn(adata, person, world);
-          let (second, result, more) =
-            switch (result) {
-            | InProcess(c) => (false, InProcess(c), [])
-            | Succeeded(m) => (true, InProcess(0), [(None, Message(m)), (None, Message(transitionMessage))])
-            | Failed(e) => (false, Failed(e), [])
-            };
-          ((second, adata, bdata), result, changes @ more);
-        } else {
-          let (bdata, result, changes) = bfn(bdata, person, world);
-          ((true, adata, bdata), result, changes);
-        },
-    );
+  Goal(
+    (false, adata, bdata),
+    ((second, adata, bdata), person, world) =>
+      if (!second) {
+        let (adata, result, changes) = afn(adata, person, world);
+        let (second, result, more) =
+          switch (result) {
+          | InProcess(c) => (false, InProcess(c), [])
+          | Succeeded(m) => (
+              true,
+              InProcess(0),
+              [(None, Message(m)), (None, Message(transitionMessage))],
+            )
+          | Failed(e) => (false, Failed(e), [])
+          };
+        ((second, adata, bdata), result, changes @ more);
+      } else {
+        let (bdata, result, changes) = bfn(bdata, person, world);
+        ((true, adata, bdata), result, changes);
+      },
+  );
 
 let changeMessages = (goal, success, failure) =>
   mapResult(goal, result =>
@@ -175,6 +183,8 @@ let changeMessages = (goal, success, failure) =>
     | p => p
     }
   );
+
+let leave = Goal((), ((), person, _world) => ((), Succeeded(person.name ++ " went home"), [(None, Updates.removePerson(person.id))]))
 
 let goToExhibit = (world, person, building: Types.Map.building) => {
   switch (building.kind) {
@@ -187,15 +197,15 @@ let goToExhibit = (world, person, building: Types.Map.building) => {
         ...goal,
         name: "go to the " ++ name,
         updater:
-        chainGoals(
-          changeMessages(
-            goal.updater,
-            person.name ++ " reached the " ++ name,
-            person.name ++ " gave up trying to find the " ++ name,
+          chainGoals(
+            changeMessages(
+              goal.updater,
+              person.name ++ " reached the " ++ name,
+              person.name ++ " gave up trying to find the " ++ name,
+            ),
+            watchTheAnimals(world, person, building.id),
+            "Now on to watching the animals",
           ),
-          watchTheAnimals(world, person, building.id),
-          "Now on to watching the animals"
-        )
       })
     };
   | _ => assert(false)
@@ -239,19 +249,34 @@ let goToExhibit = (world, person, building: Types.Map.building) => {
 //   };
 // };
 
-let randomGoal = (world: Types.world, person: Types.person) => {
-  let exhibit =
-    world.rng
-    ->Prando.choose(
-        world.map.buildings
-        ->Belt.Map.Int.valuesToArray
-        ->Belt.Array.keep(building =>
-            switch (building.kind) {
-            | Exhibit(_) => true
-            | _ => false
-            }
-          ),
-      );
-  // goToPoint(world, person, exhibit.point)
-  goToExhibit(world, person, exhibit);
-};
+let randomGoal = (world: Types.world, person: Types.person) =>
+  if (person.condition.stamina <= 0.0) {
+    let exit = world.rng->Prando.choose(world.map.exits->Array.of_list);
+    switch (goToPoint(world, person, exit)) {
+      | None => None
+      | Some(goal) => Some({
+        ...goal,
+        name: "leave the zoo",
+        updater: chainGoals(
+          changeMessages(goal.updater, person.name ++ " left the zoo", person.name ++ " gave up trying to leave the zoo"),
+          leave,
+          "They got in their car"
+        )
+      })
+    };
+  } else {
+    let exhibit =
+      world.rng
+      ->Prando.choose(
+          world.map.buildings
+          ->Belt.Map.Int.valuesToArray
+          ->Belt.Array.keep(building =>
+              switch (building.kind) {
+              | Exhibit(_) => true
+              | _ => false
+              }
+            ),
+        );
+    // goToPoint(world, person, exhibit.point)
+    goToExhibit(world, person, exhibit);
+  };
