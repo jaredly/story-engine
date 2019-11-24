@@ -65,7 +65,7 @@ let world = (ctx, world: Types.world) => {
         let oy = sin(angle +. pi /. 2.) *. person.offset *. offset;
         let (x, y) = lerp2d(p1.pos, p2.pos, person.position.progress)
         ctx->beginPath;
-        ctx->circle(x +. ox, y +. oy, line_size /. 10.0);
+        ctx->circle(x +. ox, y +. oy, line_size /. 4.0);
         ctx->fill;
     })
 }

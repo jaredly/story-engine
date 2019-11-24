@@ -146,6 +146,16 @@ let condition = rng => {
 // module Knowledge = {
 // }
 
+type gender = Male | Female;
+
+type demographics = {
+    age: int,
+    // is_birthday
+    name: string,
+    gender,
+
+}
+
 type goalResult =
     | Failed(string)
     | InProcess(int) // timer for when to recheck
@@ -187,8 +197,9 @@ and position = {
 
 and person = {
     id: int,
-    name: string,
-    age: int,
+    demographics,
+    // name: string,
+    // age: int,
     emotions: list(emotion),
     characteristics,
     condition,
@@ -230,7 +241,7 @@ and world = {
     mutable map
 };
 
-let names = [|"Aba", "Joe", "Misha", "Ginny", "Jessica", "Taylor", "Jessie"|];
+// let names = [|"Aba", "Joe", "Misha", "Ginny", "Jessica", "Taylor", "Jessie"|];
 
 module Updates = {
     let setPosition = (id, position): worldUpdate => {
@@ -245,12 +256,27 @@ module Updates = {
 let closestPoint = (person, map) => {
     let edge = map.edges->Belt.Map.Int.getExn(person.position.edge);
     person.position.progress < 0.5 ? edge.source : edge.dest
+};
+
+[@bs.module]
+[@bs.val]
+external names: {. "m": array(string), "f": array(string) } = "../assets/names.json";
+
+let chooseName = (rng, gender) => {
+    let names = gender == Female ? names##f : names##m;
+    rng->Prando.choose(names)
 }
 
 let person = (id, rng, position) => {
+    let gender = rng->Prando.choose([|Male, Female|]);
+    {
     id: id,
-    name: rng->Prando.choose(names) ++ " #" ++ string_of_int(id),
-    age: rng->Prando.int(5, 25),
+    // name: rng->Prando.choose(names) ++ " #" ++ string_of_int(id),
+    demographics: {
+        age: rng->Prando.int(5, 25),
+        name: rng->chooseName(gender),
+        gender,
+    },
     emotions: [],
     characteristics: characteristics(rng),
     condition: condition(rng),
@@ -258,4 +284,5 @@ let person = (id, rng, position) => {
     goals: [],
     position,
     offset: rng->Prando.range(-1.0, 1.0),
+}
 }

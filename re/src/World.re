@@ -69,14 +69,17 @@ let addPerson = world => {
   let exit = world.rng->Prando.choose(world.map.exits->Array.of_list);
   let edges = world.map.pointToEdges->getExn(exit);
   let edge = world.rng->Prando.choose(edges->Array.of_list);
-  let person = Types.person(id, world.rng, {edge, progress: 0.0});
+  let person = Types.person(id, world.rng, {
+    edge,
+    progress: world.map.edges->getExn(edge).source == exit ? 0.0 : 1.0,
+  });
   world.people =
     world.people
     ->set(id, person);
   switch (Goals.randomGoal(world, person)) {
     | None => ()
     | Some(goal) => 
-    Js.log(person.name ++ " decided to " ++ goal.name);
+    Js.log(person.demographics.name ++ " decided to " ++ goal.name);
     world->processUpdate(Updates.addGoal(id, goal))
   };
 };

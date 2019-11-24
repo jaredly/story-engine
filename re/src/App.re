@@ -1,9 +1,10 @@
 [%%debugger.chrome];
 
 // let world = Basic.gen();
-let size = 1450.0;
+let size = 1000.0;
 let rng = Prando.make(100);
-let world = RandomMap.gen(size, 180.0, 380.0, rng);
+// let world = RandomMap.gen(size, 180.0, 380.0, rng);
+let world = RandomMap.gen(size, 110.0, size, rng);
 
 let canvas = Canvas.createOnBody(size |> int_of_float, size |> int_of_float);
 let ctx = canvas->Canvas.getContext;
@@ -18,10 +19,10 @@ world->World.addPerson;
 
 Js.Global.setInterval(() => {
     world->World.step
-    world->World.step
-    world->World.step
-    world->World.step
-    world->World.step
+    // world->World.step
+    // world->World.step
+    // world->World.step
+    // world->World.step
     ctx->Canvas.Ctx.clearRect(0.0, 0.0, size, size);
     ctx->Draw.world(world)
-}, 10)
+}, 50)

@@ -27,7 +27,7 @@ let step = (world, person, goal) =>
     ({...goal, timer: goal.timer - 1}, [], false);
   };
 
-let speed = 0.4;
+let speed = 4.0;
 
 let advance = (pid, edge: Types.Map.edge, position) => {
   let speed = speed /. edge.length;
@@ -64,7 +64,9 @@ let watchTheAnimals = (world, person, bid) => {
       if (time > 20) {
         (
           time,
-          Succeeded(person.name ++ " was satisfied with the " ++ name),
+          Succeeded(
+            person.demographics.name ++ " was satisfied with the " ++ name,
+          ),
           [],
         );
       } else {
@@ -116,7 +118,7 @@ let goToPoint = (world, person, pid) => {
                   InProcess(1),
                   [
                     (
-                      Some(person.name ++ " turned"),
+                      Some(person.demographics.name ++ " turned"),
                       Updates.setPosition(person.id, position),
                     ),
                   ],
@@ -184,7 +186,16 @@ let changeMessages = (goal, success, failure) =>
     }
   );
 
-let leave = Goal((), ((), person, _world) => ((), Succeeded(person.name ++ " went home"), [(None, Updates.removePerson(person.id))]))
+let leave =
+  Goal(
+    (),
+    ((), person, _world) =>
+      (
+        (),
+        Succeeded(person.demographics.name ++ " went home"),
+        [(None, Updates.removePerson(person.id))],
+      ),
+  );
 
 let goToExhibit = (world, person, building: Types.Map.building) => {
   switch (building.kind) {
@@ -200,8 +211,10 @@ let goToExhibit = (world, person, building: Types.Map.building) => {
           chainGoals(
             changeMessages(
               goal.updater,
-              person.name ++ " reached the " ++ name,
-              person.name ++ " gave up trying to find the " ++ name,
+              person.demographics.name ++ " reached the " ++ name,
+              person.demographics.name
+              ++ " gave up trying to find the "
+              ++ name,
             ),
             watchTheAnimals(world, person, building.id),
             "Now on to watching the animals",
@@ -253,15 +266,21 @@ let randomGoal = (world: Types.world, person: Types.person) =>
   if (person.condition.stamina <= 0.0) {
     let exit = world.rng->Prando.choose(world.map.exits->Array.of_list);
     switch (goToPoint(world, person, exit)) {
-      | None => None
-      | Some(goal) => Some({
+    | None => None
+    | Some(goal) =>
+      Some({
         ...goal,
         name: "leave the zoo",
-        updater: chainGoals(
-          changeMessages(goal.updater, person.name ++ " left the zoo", person.name ++ " gave up trying to leave the zoo"),
-          leave,
-          "They got in their car"
-        )
+        updater:
+          chainGoals(
+            changeMessages(
+              goal.updater,
+              person.demographics.name ++ " left the zoo",
+              person.demographics.name ++ " gave up trying to leave the zoo",
+            ),
+            leave,
+            "They got in their car",
+          ),
       })
     };
   } else {

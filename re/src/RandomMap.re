@@ -4,7 +4,7 @@
 external animals: array({.
   "name": string,
   "href": string
-}) = "../animals.json";
+}) = "../assets/animals.json";
 
 let shuffle = (points, rng) => {
   let ln = Array.length(points);
@@ -50,9 +50,7 @@ let gen = (size, minDist, maxDist, rng) => {
   let pointIndices = values->Belt.Array.mapWithIndex((index, _point) => index);
 
   let edgePoints = pointIndices
-  ->Belt.Array.keep(index => {
-    !isInternal(index)
-  });
+  ->Belt.Array.keep(index => !isInternal(index));
   edgePoints->shuffle(rng);
 
   let num_exits = max(1, edgePoints->Array.length / 10);
