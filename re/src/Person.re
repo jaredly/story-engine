@@ -3,7 +3,7 @@ let stepCondition = (condition: Types.condition, rng)  => {
   ...condition,
   thirst: min(1.0, condition.thirst +. (rng->Prando.range(0.01, 0.05))),
   hunger: min(1.0, condition.hunger +. (rng->Prando.range(0.01, 0.05))),
-  stamina: max(0.0, condition.stamina -. rng->Prando.range(0.0001, 0.0005)),
+  stamina: max(0.0, condition.stamina -. rng->Prando.range(0.00001, 0.00005)),
   // stamina: max(0.0, condition.stamina -. 0.1),
 }
 

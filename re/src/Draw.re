@@ -1,8 +1,9 @@
+let line_size = 30.0;
 
 let map = (ctx: Canvas.ctx, map: Types.Map.map) => {
     open Canvas.Ctx;
     ctx->setStrokeStyle("#ccc");
-    ctx->setLineWidth(4.0);
+    ctx->setLineWidth(line_size);
     map.edges->Belt.Map.Int.forEach((_key, v) => {
         let p1 = map.points->Belt.Map.Int.getExn(v.source).pos;
         let p2 = map.points->Belt.Map.Int.getExn(v.dest).pos;
@@ -17,7 +18,15 @@ let map = (ctx: Canvas.ctx, map: Types.Map.map) => {
         // let p2 = map.points->Belt.Map.Int.getExn(v.dest).pos;
         let (x, y) = v.pos;
         ctx->beginPath;
-        ctx->circle(x, y, 2.0);
+        ctx->circle(x, y, line_size /. 2.0);
+        ctx->fill;
+    });
+
+    ctx->setFillStyle("#7fa");
+    map.exits->Belt.List.forEach((b) => {
+        let (x, y) = map.points->Belt.Map.Int.getExn(b).pos;
+        ctx->beginPath;
+        ctx->circle(x, y, line_size /. 2.0 *. 1.5);
         ctx->fill;
     });
 
@@ -26,7 +35,7 @@ let map = (ctx: Canvas.ctx, map: Types.Map.map) => {
         let (x, y) = map.points->Belt.Map.Int.getExn(b.point).pos;
         ctx->beginPath;
         // ctx->circle(x +. 2.0, y +. 2.0, 2.0);
-        ctx->circle(x, y, 2.0);
+        ctx->circle(x, y, line_size /. 2.0 *. 1.5);
         ctx->fill;
     })
 }
@@ -51,13 +60,12 @@ let world = (ctx, world: Types.world) => {
         let p1 = world.map.points->getExn(edge.source);
         let p2 = world.map.points->getExn(edge.dest);
         let angle = angleTo(p1.pos, p2.pos);
-        let offset = 1.0;
+        let offset = line_size /. 2.0;
         let ox = cos(angle +. pi /. 2.) *. person.offset *. offset;
         let oy = sin(angle +. pi /. 2.) *. person.offset *. offset;
         let (x, y) = lerp2d(p1.pos, p2.pos, person.position.progress)
         ctx->beginPath;
-        ctx->circle(x +. ox, y +. oy, 0.5);
+        ctx->circle(x +. ox, y +. oy, line_size /. 10.0);
         ctx->fill;
     })
-
 }

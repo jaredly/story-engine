@@ -82,7 +82,9 @@ let addPerson = world => {
 };
 
 let step = world => {
-  if (world.people->Belt.Map.Int.size < 20 && world.rng->Prando.float < 0.04) {
+  let numBuildings = world.map.buildings->Belt.Map.Int.size;
+  let maxPeople = numBuildings * 20;
+  if (world.people->Belt.Map.Int.size < maxPeople && world.rng->Prando.float < 0.04) {
     world->addPerson;
   }
   let changes = world.people->keysToArray->Belt.Array.reduce([], (changes, pid) => {
