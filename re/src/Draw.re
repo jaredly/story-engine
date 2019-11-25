@@ -1,4 +1,4 @@
-let line_size = 30.0;
+let line_size = 15.0;
 
 let map = (ctx: Canvas.ctx, map: Types.Map.map) => {
     open Canvas.Ctx;
