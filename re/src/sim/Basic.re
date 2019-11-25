@@ -109,6 +109,7 @@ let gen = () => {
   let world: Types.world = {
     rng: Prando.make(0),
     genId,
+    peopleWhoLeft: [],
     people: empty,
     animals: empty,
     items: empty,

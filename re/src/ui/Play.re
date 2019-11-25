@@ -11,6 +11,7 @@ let makeWorld = (size, minDist, seed) => {
 [@react.component]
 let make = () => {
   let (size, setSize) = useState(500.0);
+  // let (skip, setSkip) = useState(50);
   let (minDist, setMinDist) = useState(75.0);
   let (seed, setSeed) = useState(100);
 
@@ -34,6 +35,12 @@ let make = () => {
   //   draw();
   //   ()
   // }, (size, minDist, seed))
+
+  let skip = count => {
+    for (_ in 0 to count) {
+      world->React.Ref.current->World.step
+    }
+  };
 
   React.useEffect3(
     () => {
@@ -68,6 +75,23 @@ let make = () => {
       />
       {React.string(string_of_int(seed))}
     </div>
+    <div>
+      {React.string("Skip steps")}
+      <button onClick={_ => skip(100)}> {React.string("100")} </button>
+      <button onClick={_ => skip(500)}> {React.string("500")} </button>
+      <button onClick={_ => skip(1000)}> {React.string("1000")} </button>
+    </div>
+    // <div>
+    //   {React.string("Skip")}
+    //   <input
+    //     type_="range"
+    //     min=0
+    //     max="1000"
+    //     value=string_of_int(skip)
+    //     onChange={evt => setSkip(int_of_string(evt->ReactEvent.Form.target##value))}
+    //   />
+    //   {React.string(string_of_int(skip))}
+    // </div>
     <div>
       {React.string("Size")}
       <input

@@ -22,7 +22,7 @@ let map = (ctx: Canvas.ctx, map: Types.Map.map) => {
         ctx->fill;
     });
 
-    ctx->setFillStyle("#7fa");
+    ctx->setFillStyle("#052");
     map.exits->Belt.List.forEach((b) => {
         let (x, y) = map.points->Belt.Map.Int.getExn(b).pos;
         ctx->beginPath;
@@ -30,7 +30,7 @@ let map = (ctx: Canvas.ctx, map: Types.Map.map) => {
         ctx->fill;
     });
 
-    ctx->setFillStyle("red");
+    ctx->setFillStyle("#520");
     map.buildings->Belt.Map.Int.forEach((_, b) => {
         let (x, y) = map.points->Belt.Map.Int.getExn(b.point).pos;
         ctx->beginPath;
@@ -54,8 +54,9 @@ let world = (ctx, world: Types.world) => {
     ctx->map(world.map);
     open Belt.Map.Int;
     open Canvas.Ctx;
-    ctx->setFillStyle("#777");
+    // ctx->setFillStyle("#777");
     world.people->Belt.Map.Int.forEach((_, person) => {
+        ctx->setFillStyle(person.demographics.clothesColor);
         let edge = world.map.edges->getExn(person.position.edge);
         let p1 = world.map.points->getExn(edge.source);
         let p2 = world.map.points->getExn(edge.dest);

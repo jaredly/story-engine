@@ -46,7 +46,10 @@ let processPersonUpdate = (_world, person, update: Types.personUpdate) => {
 }
 
 let processUpdate = (world, update: Types.worldUpdate) => switch update {
-  | Person(id, Remove) => world.people = world.people->remove(id)
+  | Person(id, Remove) => 
+    let person = world.people->getExn(id);
+    world.peopleWhoLeft = [person, ...world.peopleWhoLeft];
+    world.people = world.people->remove(id)
   | Person(id, personUpdate) => 
     switch (world.people->get(id)) {
       | None => ()
@@ -58,7 +61,7 @@ let processUpdate = (world, update: Types.worldUpdate) => switch update {
         ))
     }
   | Message(message) => {
-    Js.log(message);
+    // Js.log(message);
     ()
   }
   | _ => failwith("nope")
@@ -79,7 +82,7 @@ let addPerson = world => {
   switch (Goals.randomGoal(world, person)) {
     | None => ()
     | Some(goal) => 
-    Js.log(person.demographics.name ++ " decided to " ++ goal.name);
+    // Js.log(person.demographics.name ++ " decided to " ++ goal.name);
     world->processUpdate(Updates.addGoal(id, goal))
   };
 };
@@ -104,7 +107,7 @@ let step = world => {
     switch message {
       | None => ()
       | Some(message) => {
-        Js.log(message);
+        // Js.log(message);
         ()
       }
     };

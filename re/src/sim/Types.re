@@ -152,6 +152,7 @@ type demographics = {
     age: int,
     // is_birthday
     name: string,
+    clothesColor: string,
     gender,
 
 }
@@ -235,6 +236,7 @@ and animal = {
 and world = {
     rng: Prando.t,
     genId: unit => int,
+    mutable peopleWhoLeft: list(person),
     mutable people: Belt.Map.Int.t(person),
     mutable animals: Belt.Map.Int.t(animal),
     mutable items: Belt.Map.Int.t(item),
@@ -275,6 +277,7 @@ let person = (id, rng, position) => {
     demographics: {
         age: rng->Prando.int(5, 25),
         name: rng->chooseName(gender),
+        clothesColor: "hsl(" ++ string_of_int(rng->Prando.int(0, 360)) ++ ",100%,50%)",
         gender,
     },
     emotions: [],
