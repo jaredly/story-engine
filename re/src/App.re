@@ -1,5 +1,7 @@
 [%%debugger.chrome];
 
+let maunal = () => {
+
 let size = 1000.0 /. 2.;
 let minDist = 150.0 /. 2.;
 
@@ -81,3 +83,6 @@ slider->Web.addEventListener("input", evt => {
 }, false);
 
 button->Web.addEventListener("click", evt => toggle(), false);
+};
+
+ReactDOMRe.renderToElementWithId(<Play />, "root")

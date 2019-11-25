@@ -11,4 +11,10 @@ S /Users/jared/clone/games/story-engine/re/node_modules/bs-css/lib/ocaml
 B /Users/jared/clone/games/story-engine/re/node_modules/bs-css/lib/ocaml
 S src
 B lib/bs/src
+S src/sim
+B lib/bs/src/sim
+S src/utils
+B lib/bs/src/utils
+S src/ui
+B lib/bs/src/ui
 ####BSB GENERATED: NO EDIT}

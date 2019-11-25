@@ -260,7 +260,7 @@ let closestPoint = (person, map) => {
 
 [@bs.module]
 [@bs.val]
-external names: {. "m": array(string), "f": array(string) } = "../assets/names.json";
+external names: {. "m": array(string), "f": array(string) } = "../../assets/names.json";
 
 let chooseName = (rng, gender) => {
     let names = gender == Female ? names##f : names##m;

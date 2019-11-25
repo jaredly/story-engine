@@ -5,7 +5,7 @@ external animals:
     "name": string,
     "href": string,
   }) =
-  "../assets/animals.json";
+  "../../assets/animals.json";
 
 let shuffle = (points, rng) => {
   let ln = Array.length(points);
