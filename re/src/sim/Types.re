@@ -236,6 +236,7 @@ and animal = {
 and world = {
     rng: Prando.t,
     genId: unit => int,
+    maxPeoplePerExhibit: int,
     mutable peopleWhoLeft: list(person),
     mutable people: Belt.Map.Int.t(person),
     mutable animals: Belt.Map.Int.t(animal),

@@ -197,6 +197,7 @@ let gen = (size, minDist, maxDist, rng) => {
   let world: Types.world = {
     rng,
     genId,
+    maxPeoplePerExhibit: 20,
     peopleWhoLeft: [],
     people: empty,
     animals: empty,

@@ -4,33 +4,38 @@ module Config = {
     seed: int,
     size: float,
     minDist: float,
+    maxPeoplePerExhibit: int,
   };
 
-  let default = {seed: 100, size: 500.0, minDist: 75.0};
+  let default = {seed: 100, size: 500.0, minDist: 75.0, maxPeoplePerExhibit: 20};
 
   let parse = hash => {
     switch (hash->Js.String2.split(":")) {
-      | [|seed, size, minDist|] => {
-        switch (int_of_string(seed), float_of_string(size), float_of_string(minDist)) {
+      | [|seed, size, minDist, maxPeople|] => {
+        switch (int_of_string(seed), float_of_string(size), float_of_string(minDist), int_of_string(maxPeople)) {
           | exception _ => None
-          | (seed, size, minDist) => Some({seed, size, minDist})
+          | (seed, size, minDist, maxPeoplePerExhibit) => Some({seed, size, minDist, maxPeoplePerExhibit})
         }
       }
       | _ => None
     }
   };
 
-  let stringify = ({seed, size, minDist}) => [
+  let stringify = ({seed, size, minDist, maxPeoplePerExhibit}) => [
     string_of_int(seed),
     Js.Float.toString(size),
     Js.Float.toString(minDist),
+    string_of_int(maxPeoplePerExhibit),
   ] |> String.concat(":");
 };
 
-let makeWorld = ({Config.size, minDist, seed}) => {
+let makeWorld = ({Config.size, minDist, seed, maxPeoplePerExhibit}) => {
   let rng = Prando.make(seed);
   // let world = RandomMap.gen(size, 180.0, 380.0, rng);
-  let world = RandomMap.gen(size, minDist, size, rng);
+  let world = {
+    ...RandomMap.gen(size, minDist, size, rng),
+    maxPeoplePerExhibit
+  };
   world->World.addPerson;
   world;
 };
@@ -106,23 +111,6 @@ let make = () => {
       {React.string(string_of_int(config.seed))}
     </div>
     <div>
-      {React.string("Speed")}
-      <input
-        type_="range"
-        min=1
-        max="50"
-        value=string_of_int(speed)
-        onChange={evt => setSpeed(int_of_string(evt->ReactEvent.Form.target##value))}
-      />
-      {React.string(string_of_int(speed))}
-    </div>
-    <div>
-      {React.string("Skip steps")}
-      <button onClick={_ => skip(100)}> {React.string("100")} </button>
-      <button onClick={_ => skip(500)}> {React.string("500")} </button>
-      <button onClick={_ => skip(1000)}> {React.string("1000")} </button>
-    </div>
-    <div>
       {React.string("Size")}
       <input
         type_="range"
@@ -134,6 +122,17 @@ let make = () => {
       {React.string(Js.Float.toString(config.size))}
     </div>
     <div>
+      {React.string("Max people per exhibit")}
+      <input
+        type_="range"
+        min=1
+        max="40"
+        value=string_of_int(config.maxPeoplePerExhibit)
+        onChange={evt => setConfig({...config, maxPeoplePerExhibit: int_of_string(evt->ReactEvent.Form.target##value)})}
+      />
+      {React.string(string_of_int(config.maxPeoplePerExhibit))}
+    </div>
+    <div>
       {React.string("MinDist")}
       <input
         type_="range"
@@ -143,6 +142,23 @@ let make = () => {
         onChange={evt => setConfig({...config, minDist: Js.Float.fromString(evt->ReactEvent.Form.target##value)})}
       />
       {React.string(Js.Float.toString(config.minDist))}
+    </div>
+    <div>
+      {React.string("Skip steps")}
+      <button onClick={_ => skip(100)}> {React.string("100")} </button>
+      <button onClick={_ => skip(500)}> {React.string("500")} </button>
+      <button onClick={_ => skip(1000)}> {React.string("1000")} </button>
+    </div>
+    <div>
+      {React.string("Speed")}
+      <input
+        type_="range"
+        min=1
+        max="50"
+        value=string_of_int(speed)
+        onChange={evt => setSpeed(int_of_string(evt->ReactEvent.Form.target##value))}
+      />
+      {React.string(string_of_int(speed))}
     </div>
     <div className=Css.(style([
       display(`flex),

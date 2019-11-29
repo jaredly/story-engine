@@ -89,7 +89,7 @@ let addPerson = world => {
 
 let step = world => {
   let numBuildings = world.map.buildings->Belt.Map.Int.size;
-  let maxPeople = numBuildings * 20;
+  let maxPeople = numBuildings * world.maxPeoplePerExhibit;
   if (world.people->Belt.Map.Int.size < maxPeople && world.rng->Prando.float < 0.04) {
     world->addPerson;
   }
