@@ -1,60 +1,58 @@
-let useState = initial =>
-  React.useReducer((_, newState) => newState, initial);
 
-let makeWorld = (size, minDist, seed) => {
+module Config = {
+  type t = {
+    seed: int,
+    size: float,
+    minDist: float,
+  };
+
+  let default = {seed: 100, size: 500.0, minDist: 75.0};
+
+  let parse = hash => {
+    switch (hash->Js.String2.split(":")) {
+      | [|seed, size, minDist|] => {
+        switch (int_of_string(seed), float_of_string(size), float_of_string(minDist)) {
+          | exception _ => None
+          | (seed, size, minDist) => Some({seed, size, minDist})
+        }
+      }
+      | _ => None
+    }
+  };
+
+  let stringify = ({seed, size, minDist}) => [
+    string_of_int(seed),
+    Js.Float.toString(size),
+    Js.Float.toString(minDist),
+  ] |> String.concat(":");
+};
+
+let makeWorld = ({Config.size, minDist, seed}) => {
   let rng = Prando.make(seed);
   // let world = RandomMap.gen(size, 180.0, 380.0, rng);
   let world = RandomMap.gen(size, minDist, size, rng);
+  world->World.addPerson;
   world;
 };
 
-module Monitor = {
-  [@react.component]
-  let make = (~world) => {
-    let (tick, setTick) = useState(0);
-    let tick = () => setTick(tick + 1);
-    <div>
-    <button onClick={_evt => tick()} >
-      {React.string("Check")}
-    </button>
-    <div>
-      {world->React.Ref.current.Types.map.Types.Map.buildings
-       ->Belt.Map.Int.valuesToArray
-       ->Belt.Array.map(building =>
-           <div key={string_of_int(building.id)}>
-             {switch (building.kind) {
-              | Exhibit(animals, name, terrain) => React.string(name)
-              | _ => React.string("unknwone building")
-              }}
-           </div>
-         )
-       ->React.array}
-    </div>
-    <div>
-      {world->React.Ref.current.Types.people
-       ->Belt.Map.Int.valuesToArray
-       ->Belt.Array.map(person =>
-        <div key={string_of_int(person.id)}>
-          {React.string(person.demographics.name)}
-          // {React.string(string_of_int(person.id))}
-        </div>
-       )->React.array}
-       {React.string("Hello")}
-    </div>
-    </div>
-  }
-}
-
 [@react.component]
 let make = () => {
-  let (size, setSize) = useState(500.0);
-  // let (skip, setSkip) = useState(50);
-  let (minDist, setMinDist) = useState(75.0);
-  let (seed, setSeed) = useState(100);
+  let initialConfig = React.useMemo(() => {
+    switch (Config.parse(Web.Location.hash()->Js.String2.sliceToEnd(~from=1))) {
+      | None => Config.default
+      | Some(x) => x
+    }
+  })
+  let (config, setConfig) = Hooks.useState(initialConfig);
+  // let (size, setSize) = Hooks.useState(500.0);
+  // let (minDist, setMinDist) = Hooks.useState(75.0);
+  // let (seed, setSeed) = Hooks.useState(100);
+
+  let (speed, setSpeed) = Hooks.useState(20);
 
   let canvasRef = React.useRef(Js.Nullable.null);
 
-  let initialWorld = React.useMemo(() => makeWorld(size, minDist, seed));
+  let initialWorld = React.useMemo(() => makeWorld(config));
   let world = React.useRef(initialWorld);
 
   let draw = () => {
@@ -62,16 +60,10 @@ let make = () => {
     | None => ()
     | Some(canvas) =>
       let ctx = Canvas.getContext(Obj.magic(canvas));
-      ctx->Canvas.Ctx.clearRect(0.0, 0.0, size, size);
+      ctx->Canvas.Ctx.clearRect(0.0, 0.0, config.size, config.size);
       Draw.world(ctx, world->React.Ref.current);
     };
   };
-
-  // React.useMemo3(() => {
-  //   world->React.Ref.setCurrent(makeWorld(size, minDist, seed));
-  //   draw();
-  //   ()
-  // }, (size, minDist, seed))
 
   let skip = count => {
     for (_ in 0 to count) {
@@ -79,28 +71,27 @@ let make = () => {
     }
   };
 
-  React.useEffect3(
+  React.useEffect1(
     () => {
-      world->React.Ref.setCurrent(makeWorld(size, minDist, seed));
+      world->React.Ref.setCurrent(makeWorld(config));
       draw();
+      Web.Location.setHash(Config.stringify(config));
       None;
     },
-    (size, minDist, seed),
+    [|config|],
   );
 
-  React.useEffect(() => {
+  React.useEffect1(() => {
     let id =
       Js.Global.setInterval(
         () => {
           world->React.Ref.current->World.step;
           draw();
         },
-        50,
+        1000 / speed,
       );
     Some(() => Js.Global.clearInterval(id));
-  });
-
-  Js.log(world);
+  }, [|speed|]);
 
   <div>
     <div>
@@ -109,10 +100,21 @@ let make = () => {
         type_="range"
         min=0
         max="100"
-        value=string_of_int(seed)
-        onChange={evt => setSeed(int_of_string(evt->ReactEvent.Form.target##value))}
+        value=string_of_int(config.seed)
+        onChange={evt => setConfig({...config, seed: int_of_string(evt->ReactEvent.Form.target##value)})}
       />
-      {React.string(string_of_int(seed))}
+      {React.string(string_of_int(config.seed))}
+    </div>
+    <div>
+      {React.string("Speed")}
+      <input
+        type_="range"
+        min=1
+        max="50"
+        value=string_of_int(speed)
+        onChange={evt => setSpeed(int_of_string(evt->ReactEvent.Form.target##value))}
+      />
+      {React.string(string_of_int(speed))}
     </div>
     <div>
       {React.string("Skip steps")}
@@ -126,10 +128,10 @@ let make = () => {
         type_="range"
         min=200
         max="1000"
-        value=Js.Float.toString(size)
-        onChange={evt => setSize(Js.Float.fromString(evt->ReactEvent.Form.target##value))}
+        value=Js.Float.toString(config.size)
+        onChange={evt => setConfig({...config, size: Js.Float.fromString(evt->ReactEvent.Form.target##value)})}
       />
-      {React.string(Js.Float.toString(size))}
+      {React.string(Js.Float.toString(config.size))}
     </div>
     <div>
       {React.string("MinDist")}
@@ -137,10 +139,10 @@ let make = () => {
         type_="range"
         min=30
         max="300"
-        value=Js.Float.toString(minDist)
-        onChange={evt => setMinDist(Js.Float.fromString(evt->ReactEvent.Form.target##value))}
+        value=Js.Float.toString(config.minDist)
+        onChange={evt => setConfig({...config, minDist: Js.Float.fromString(evt->ReactEvent.Form.target##value)})}
       />
-      {React.string(Js.Float.toString(minDist))}
+      {React.string(Js.Float.toString(config.minDist))}
     </div>
     <div className=Css.(style([
       display(`flex),
@@ -148,8 +150,8 @@ let make = () => {
       alignItems(`flexStart),
     ]))>
     <canvas
-      width={Js.Float.toString(size)}
-      height={Js.Float.toString(size)}
+      width={Js.Float.toString(config.size)}
+      height={Js.Float.toString(config.size)}
       ref={canvasRef->ReactDOMRe.Ref.domRef}
     />
     <Monitor world />
