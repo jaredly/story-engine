@@ -67,7 +67,9 @@ let gen = (size, minDist, maxDist, rng) => {
     addEdgeToInternal(triangles[i * 3], triangles[i * 3 + 2]);
   };
 
-  let edgePoints = Hashtbl.fold((k, _, keys) => [k, ...keys], edgeToInternal, [])->Array.of_list;
+  let edgePoints =
+    Hashtbl.fold((k, _, keys) => [k, ...keys], edgeToInternal, [])
+    ->Array.of_list;
 
   edgePoints->shuffle(rng);
 
@@ -79,13 +81,12 @@ let gen = (size, minDist, maxDist, rng) => {
     isExit(index) || isInternal(index);
   };
 
-  let bothGood = (a, b) => {
+  let bothGood = (a, b) =>
     if (isExit(a)) {
-      isInternal(b)
+      isInternal(b);
     } else {
-      isInternal(a) && (isExit(b) || isInternal(b))
-    }
-  }
+      isInternal(a) && (isExit(b) || isInternal(b));
+    };
 
   let edges = Hashtbl.create(100);
   let addEdge = (a, b) =>
@@ -152,16 +153,12 @@ let gen = (size, minDist, maxDist, rng) => {
 
   let points =
     buildings->Belt.Map.Int.reduce(points, (points, _, building) =>
-      Belt.Map.Int.
-        (
-          points->set(
-            building.point,
-            {
-              ...points->getExn(building.point),
-              building: Some(building.id),
-            },
-          )
+      Belt.Map.Int.(
+        points->set(
+          building.point,
+          {...points->getExn(building.point), building: Some(building.id)},
         )
+      )
     );
 
   let l1 = genId();

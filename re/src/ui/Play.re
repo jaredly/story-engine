@@ -1,4 +1,3 @@
-
 module Config = {
   type t = {
     seed: int,
@@ -7,26 +6,38 @@ module Config = {
     maxPeoplePerExhibit: int,
   };
 
-  let default = {seed: 100, size: 500.0, minDist: 75.0, maxPeoplePerExhibit: 20};
+  let default = {
+    seed: 100,
+    size: 500.0,
+    minDist: 75.0,
+    maxPeoplePerExhibit: 20,
+  };
 
   let parse = hash => {
     switch (hash->Js.String2.split(":")) {
-      | [|seed, size, minDist, maxPeople|] => {
-        switch (int_of_string(seed), float_of_string(size), float_of_string(minDist), int_of_string(maxPeople)) {
-          | exception _ => None
-          | (seed, size, minDist, maxPeoplePerExhibit) => Some({seed, size, minDist, maxPeoplePerExhibit})
-        }
+    | [|seed, size, minDist, maxPeople|] =>
+      switch (
+        int_of_string(seed),
+        float_of_string(size),
+        float_of_string(minDist),
+        int_of_string(maxPeople),
+      ) {
+      | exception _ => None
+      | (seed, size, minDist, maxPeoplePerExhibit) =>
+        Some({seed, size, minDist, maxPeoplePerExhibit})
       }
-      | _ => None
-    }
+    | _ => None
+    };
   };
 
-  let stringify = ({seed, size, minDist, maxPeoplePerExhibit}) => [
-    string_of_int(seed),
-    Js.Float.toString(size),
-    Js.Float.toString(minDist),
-    string_of_int(maxPeoplePerExhibit),
-  ] |> String.concat(":");
+  let stringify = ({seed, size, minDist, maxPeoplePerExhibit}) =>
+    [
+      string_of_int(seed),
+      Js.Float.toString(size),
+      Js.Float.toString(minDist),
+      string_of_int(maxPeoplePerExhibit),
+    ]
+    |> String.concat(":");
 };
 
 let makeWorld = ({Config.size, minDist, seed, maxPeoplePerExhibit}) => {
@@ -34,7 +45,7 @@ let makeWorld = ({Config.size, minDist, seed, maxPeoplePerExhibit}) => {
   // let world = RandomMap.gen(size, 180.0, 380.0, rng);
   let world = {
     ...RandomMap.gen(size, minDist, size, rng),
-    maxPeoplePerExhibit
+    maxPeoplePerExhibit,
   };
   world->World.addPerson;
   world;
@@ -42,12 +53,15 @@ let makeWorld = ({Config.size, minDist, seed, maxPeoplePerExhibit}) => {
 
 [@react.component]
 let make = () => {
-  let initialConfig = React.useMemo(() => {
-    switch (Config.parse(Web.Location.hash()->Js.String2.sliceToEnd(~from=1))) {
+  let initialConfig =
+    React.useMemo(() => {
+      switch (
+        Config.parse(Web.Location.hash()->Js.String2.sliceToEnd(~from=1))
+      ) {
       | None => Config.default
       | Some(x) => x
-    }
-  })
+      }
+    });
   let (config, setConfig) = Hooks.useState(initialConfig);
   // let (size, setSize) = Hooks.useState(500.0);
   // let (minDist, setMinDist) = Hooks.useState(75.0);
@@ -72,8 +86,8 @@ let make = () => {
 
   let skip = count => {
     for (_ in 0 to count) {
-      world->React.Ref.current->World.step
-    }
+      world->React.Ref.current->World.step;
+    };
   };
 
   React.useEffect1(
@@ -86,17 +100,20 @@ let make = () => {
     [|config|],
   );
 
-  React.useEffect1(() => {
-    let id =
-      Js.Global.setInterval(
-        () => {
-          world->React.Ref.current->World.step;
-          draw();
-        },
-        1000 / speed,
-      );
-    Some(() => Js.Global.clearInterval(id));
-  }, [|speed|]);
+  React.useEffect1(
+    () => {
+      let id =
+        Js.Global.setInterval(
+          () => {
+            world->React.Ref.current->World.step;
+            draw();
+          },
+          1000 / speed,
+        );
+      Some(() => Js.Global.clearInterval(id));
+    },
+    [|speed|],
+  );
 
   <div>
     <div>
@@ -105,8 +122,13 @@ let make = () => {
         type_="range"
         min=0
         max="100"
-        value=string_of_int(config.seed)
-        onChange={evt => setConfig({...config, seed: int_of_string(evt->ReactEvent.Form.target##value)})}
+        value={string_of_int(config.seed)}
+        onChange={evt =>
+          setConfig({
+            ...config,
+            seed: int_of_string(evt->ReactEvent.Form.target##value),
+          })
+        }
       />
       {React.string(string_of_int(config.seed))}
     </div>
@@ -116,8 +138,13 @@ let make = () => {
         type_="range"
         min=200
         max="1000"
-        value=Js.Float.toString(config.size)
-        onChange={evt => setConfig({...config, size: Js.Float.fromString(evt->ReactEvent.Form.target##value)})}
+        value={Js.Float.toString(config.size)}
+        onChange={evt =>
+          setConfig({
+            ...config,
+            size: Js.Float.fromString(evt->ReactEvent.Form.target##value),
+          })
+        }
       />
       {React.string(Js.Float.toString(config.size))}
     </div>
@@ -127,8 +154,14 @@ let make = () => {
         type_="range"
         min=1
         max="40"
-        value=string_of_int(config.maxPeoplePerExhibit)
-        onChange={evt => setConfig({...config, maxPeoplePerExhibit: int_of_string(evt->ReactEvent.Form.target##value)})}
+        value={string_of_int(config.maxPeoplePerExhibit)}
+        onChange={evt =>
+          setConfig({
+            ...config,
+            maxPeoplePerExhibit:
+              int_of_string(evt->ReactEvent.Form.target##value),
+          })
+        }
       />
       {React.string(string_of_int(config.maxPeoplePerExhibit))}
     </div>
@@ -138,8 +171,13 @@ let make = () => {
         type_="range"
         min=30
         max="300"
-        value=Js.Float.toString(config.minDist)
-        onChange={evt => setConfig({...config, minDist: Js.Float.fromString(evt->ReactEvent.Form.target##value)})}
+        value={Js.Float.toString(config.minDist)}
+        onChange={evt =>
+          setConfig({
+            ...config,
+            minDist: Js.Float.fromString(evt->ReactEvent.Form.target##value),
+          })
+        }
       />
       {React.string(Js.Float.toString(config.minDist))}
     </div>
@@ -155,22 +193,27 @@ let make = () => {
         type_="range"
         min=1
         max="50"
-        value=string_of_int(speed)
-        onChange={evt => setSpeed(int_of_string(evt->ReactEvent.Form.target##value))}
+        value={string_of_int(speed)}
+        onChange={evt =>
+          setSpeed(int_of_string(evt->ReactEvent.Form.target##value))
+        }
       />
       {React.string(string_of_int(speed))}
     </div>
-    <div className=Css.(style([
-      display(`flex),
-      flexDirection(`row),
-      alignItems(`flexStart),
-    ]))>
-    <canvas
-      width={Js.Float.toString(config.size)}
-      height={Js.Float.toString(config.size)}
-      ref={canvasRef->ReactDOMRe.Ref.domRef}
-    />
-    <Monitor world />
+    <div
+      className=Css.(
+        style([
+          display(`flex),
+          flexDirection(`row),
+          alignItems(`flexStart),
+        ])
+      )>
+      <canvas
+        width={Js.Float.toString(config.size)}
+        height={Js.Float.toString(config.size)}
+        ref={canvasRef->ReactDOMRe.Ref.domRef}
+      />
+      <Monitor world />
     </div>
   </div>;
 };
