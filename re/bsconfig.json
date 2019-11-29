@@ -4,7 +4,7 @@
     "react-jsx": 3
   },
   "warnings": {
-    "number": "-44-45"
+    "number": "-44-45-105-27"
   },
   "sources": {
     "dir" : "src",
@@ -14,7 +14,6 @@
     "module": "commonjs",
     "in-source": true
   }],
-  // "ppx-flags": ["let-anything/ppx"],
   "suffix": ".bs.js",
   "bsc-flags": ["-bs-g"],
   "bs-dependencies": [

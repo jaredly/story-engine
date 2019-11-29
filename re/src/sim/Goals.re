@@ -10,16 +10,8 @@ let step = (world, person, goal) =>
       let goal = {...goal, updater};
       // Js.log3("Updating", ndata, updates);
       switch (result) {
-      | Failed(message) => (
-          goal,
-          [(None, Message(message)), ...updates],
-          true,
-        )
-      | Succeeded(message) => (
-          goal,
-          [(None, Message(message)), ...updates],
-          true,
-        )
+      | Failed(message) => (goal, updates, true)
+      | Succeeded(message) => (goal, updates, true)
       | InProcess(timer) => ({...goal, timer}, updates, false)
       };
     };
@@ -34,13 +26,11 @@ let advance = (pid, edge: Types.Map.edge, position) => {
   let (progress, goal) =
     if (edge.source == pid) {
       (
-        // Js.log3("Advancing to the source", edge, position.progress);
         max(0.0, position.progress -. speed),
         0.0,
       );
     } else {
       (
-        // Js.log3("Advancing to the dest", edge, position.progress);
         min(1.0, position.progress +. speed),
         1.0,
       );
@@ -77,6 +67,7 @@ let watchTheAnimals = (world, person, bid) => {
 };
 
 let goToPoint = (world, person, pid) => {
+  let update = update => {update, trail: ["goToPoint"]};
   let path =
     Types.Map.findPath(world.map, Types.closestPoint(person, world.map), pid)
     ->Js.Null.toOption;
@@ -88,6 +79,7 @@ let goToPoint = (world, person, pid) => {
       id: world.genId(),
       name: "go to a certain place",
       timer: 1,
+      timeStarted: world.clock,
       updater:
         Types.Goal(
           path,
@@ -101,7 +93,7 @@ let goToPoint = (world, person, pid) => {
               (
                 [pid],
                 reached ? Succeeded("Reached the goal!") : InProcess(1),
-                [(None, Updates.setPosition(person.id, position))],
+                [update(Updates.setPosition(person.id, position))],
               );
             | [pid, next, ...rest] =>
               let (position, reached) = advance(pid, edge, person.position);
@@ -117,8 +109,8 @@ let goToPoint = (world, person, pid) => {
                   [next, ...rest],
                   InProcess(1),
                   [
-                    (
-                      Some(person.demographics.name ++ " turned"),
+                    update(Message(person.demographics.name ++ " turned")),
+                    update(
                       Updates.setPosition(person.id, position),
                     ),
                   ],
@@ -127,7 +119,7 @@ let goToPoint = (world, person, pid) => {
                 (
                   path,
                   InProcess(1),
-                  [(None, Updates.setPosition(person.id, position))],
+                  [update(Updates.setPosition(person.id, position))],
                 );
               };
             };
@@ -154,25 +146,29 @@ let mapSuccess = (goal, map) =>
     }
   );
 
-let chainGoals = (Goal(adata, afn), Goal(bdata, bfn), transitionMessage) =>
+let addTrail = (trail, goalUpdate) => {...goalUpdate, trail: goalUpdate.trail @ trail};
+
+let chainGoals = (Goal(adata, afn), Goal(bdata, bfn), trail, transitionMessage) =>
   Goal(
     (false, adata, bdata),
     ((second, adata, bdata), person, world) =>
       if (!second) {
         let (adata, result, changes) = afn(adata, person, world);
+        let changes = changes->Belt.List.map(addTrail(trail));
         let (second, result, more) =
           switch (result) {
           | InProcess(c) => (false, InProcess(c), [])
           | Succeeded(m) => (
               true,
               InProcess(0),
-              [(None, Message(m)), (None, Message(transitionMessage))],
+              [{trail, update: Message(m)}, {trail, update: Message(transitionMessage)}],
             )
           | Failed(e) => (false, Failed(e), [])
           };
         ((second, adata, bdata), result, changes @ more);
       } else {
         let (bdata, result, changes) = bfn(bdata, person, world);
+        let changes = changes->Belt.List.map(addTrail(trail));
         ((true, adata, bdata), result, changes);
       },
   );
@@ -193,7 +189,7 @@ let leave =
       (
         (),
         Succeeded(person.demographics.name ++ " went home"),
-        [(None, Updates.removePerson(person.id))],
+        [{trail: ["leave"], update: Updates.removePerson(person.id)}],
       ),
   );
 
@@ -217,6 +213,7 @@ let goToExhibit = (world, person, building: Types.Map.building) => {
               ++ name,
             ),
             watchTheAnimals(world, person, building.id),
+            ["goToExhibit"],
             "Now on to watching the animals",
           ),
       })
@@ -224,43 +221,6 @@ let goToExhibit = (world, person, building: Types.Map.building) => {
   | _ => assert(false)
   };
 };
-
-// let goToExhibit = (world, person, building: Types.Map.building) => {
-//   switch (building.kind) {
-//   | Types.Map.Exhibit(animals, name, terrain) =>
-//     let goal = goToPoint(world, person, building.point);
-//     switch (goal) {
-//     | None => None
-//     | Some(goal) =>
-//       Some({
-//         ...goal,
-//         name: "go to the " ++ name,
-//         updater:
-//           switch (goal.updater) {
-//           | Goal(data, fn) =>
-//             Goal(
-//               data,
-//               (data, person, world) => {
-//                 let (data, result, changes) = fn(data, person, world);
-//                 let result =
-//                   switch (result) {
-//                   | Failed(_) =>
-//                     Failed(
-//                       person.name ++ " gave up trying to find the " ++ name,
-//                     )
-//                   | Succeeded(_) =>
-//                     Succeeded(person.name ++ " reached the " ++ name)
-//                   | p => p
-//                   };
-//                 (data, result, changes);
-//               },
-//             )
-//           },
-//       })
-//     };
-//   | _ => assert(false)
-//   };
-// };
 
 let randomGoal = (world: Types.world, person: Types.person) =>
   if (person.condition.stamina <= 0.0) {
@@ -279,6 +239,7 @@ let randomGoal = (world: Types.world, person: Types.person) =>
               person.demographics.name ++ " gave up trying to leave the zoo",
             ),
             leave,
+            ["goToExhibit"],
             "They got in their car",
           ),
       })
@@ -296,6 +257,5 @@ let randomGoal = (world: Types.world, person: Types.person) =>
               }
             ),
         );
-    // goToPoint(world, person, exhibit.point)
     goToExhibit(world, person, exhibit);
   };

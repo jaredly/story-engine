@@ -172,15 +172,28 @@ type goalUpdater =
   | Goal(
       'data,
       ('data, person, world) =>
-      ('data, goalResult, list((option(string), worldUpdate))),
+      ('data, goalResult, list(goalUpdate)),
     )
     : goalUpdater
+
+and goalUpdate = {
+    update: worldUpdate,
+    // a list of goal IDs probably
+    trail: list(string),
+}
 
 and goal = {
   id: int,
   name: string,
   timer: int,
   updater: goalUpdater,
+  timeStarted: int,
+}
+
+and pastGoal = {
+    goal,
+    timeStopped: int,
+    failed: option(string),
 }
 
 and personUpdate =
@@ -218,10 +231,11 @@ and person = {
   condition,
   // knowledge: list(knowledge),
   goals: list(goal),
+  pastGoals: list(pastGoal),
   position,
   offset: float,
   // updates? events? experiences?
-  experiences: list((int, personUpdate)),
+  experiences: list((int, list(string), personUpdate)),
 }
 
 and itemOwner =
@@ -306,6 +320,7 @@ let person = (id, rng, position) => {
     condition: condition(rng),
     // knowledge: list(knowledge),
     goals: [],
+    pastGoals: [],
     position,
     offset: rng->Prando.range(-1.0, 1.0),
     experiences: [],

@@ -33,7 +33,7 @@ let pointToPoint = edges => {
   );
 };
 
-let processPersonUpdate = (world, person, update: Types.personUpdate) => {
+let processPersonUpdate = (world, person, trail, update: Types.personUpdate) => {
   // Js.log2("Person update", update)
   let person = switch update {
     | AddGoal(goal) => {...person, goals: [goal, ...person.goals]}
@@ -45,11 +45,11 @@ let processPersonUpdate = (world, person, update: Types.personUpdate) => {
   };
   {
     ...person,
-    experiences: [(world.clock, update), ...person.experiences]
+    experiences: [(world.clock, trail, update), ...person.experiences]
   }
 }
 
-let processUpdate = (world, update: Types.worldUpdate) => switch update {
+let processUpdate = (world, update: Types.goalUpdate) => switch update.update {
   | Person(id, Remove) => 
     let person = world.people->getExn(id);
     world.peopleWhoLeft = [person, ...world.peopleWhoLeft];
@@ -61,6 +61,7 @@ let processUpdate = (world, update: Types.worldUpdate) => switch update {
         world.people = world.people->set(id, processPersonUpdate(
           world,
           person,
+          update.trail,
           personUpdate
         ))
     }
@@ -87,7 +88,7 @@ let addPerson = world => {
     | None => ()
     | Some(goal) => 
     // Js.log(person.demographics.name ++ " decided to " ++ goal.name);
-    world->processUpdate(Updates.addGoal(id, goal))
+    world->processUpdate({trail: [], update: Updates.addGoal(id, goal)})
   };
 };
 
@@ -108,15 +109,6 @@ let step = world => {
     }
   });
   // Js.log2("Changes", List.length(changes))
-  changes->Belt.List.forEach((((message, update)) => {
-    switch message {
-      | None => ()
-      | Some(message) => {
-        // Js.log(message);
-        ()
-      }
-    };
-    world->processUpdate(update)
-  }));
+  changes->Belt.List.forEach(world->processUpdate);
   ();
 };
