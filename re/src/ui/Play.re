@@ -8,6 +8,43 @@ let makeWorld = (size, minDist, seed) => {
   world;
 };
 
+module Monitor = {
+  [@react.component]
+  let make = (~world) => {
+    let (tick, setTick) = useState(0);
+    let tick = () => setTick(tick + 1);
+    <div>
+    <button onClick={_evt => tick()} >
+      {React.string("Check")}
+    </button>
+    <div>
+      {world->React.Ref.current.Types.map.Types.Map.buildings
+       ->Belt.Map.Int.valuesToArray
+       ->Belt.Array.map(building =>
+           <div key={string_of_int(building.id)}>
+             {switch (building.kind) {
+              | Exhibit(animals, name, terrain) => React.string(name)
+              | _ => React.string("unknwone building")
+              }}
+           </div>
+         )
+       ->React.array}
+    </div>
+    <div>
+      {world->React.Ref.current.Types.people
+       ->Belt.Map.Int.valuesToArray
+       ->Belt.Array.map(person =>
+        <div key={string_of_int(person.id)}>
+          {React.string(person.demographics.name)}
+          // {React.string(string_of_int(person.id))}
+        </div>
+       )->React.array}
+       {React.string("Hello")}
+    </div>
+    </div>
+  }
+}
+
 [@react.component]
 let make = () => {
   let (size, setSize) = useState(500.0);
@@ -63,6 +100,8 @@ let make = () => {
     Some(() => Js.Global.clearInterval(id));
   });
 
+  Js.log(world);
+
   <div>
     <div>
       {React.string("Seed")}
@@ -81,17 +120,6 @@ let make = () => {
       <button onClick={_ => skip(500)}> {React.string("500")} </button>
       <button onClick={_ => skip(1000)}> {React.string("1000")} </button>
     </div>
-    // <div>
-    //   {React.string("Skip")}
-    //   <input
-    //     type_="range"
-    //     min=0
-    //     max="1000"
-    //     value=string_of_int(skip)
-    //     onChange={evt => setSkip(int_of_string(evt->ReactEvent.Form.target##value))}
-    //   />
-    //   {React.string(string_of_int(skip))}
-    // </div>
     <div>
       {React.string("Size")}
       <input
@@ -114,23 +142,17 @@ let make = () => {
       />
       {React.string(Js.Float.toString(minDist))}
     </div>
+    <div className=Css.(style([
+      display(`flex),
+      flexDirection(`row),
+      alignItems(`flexStart),
+    ]))>
     <canvas
       width={Js.Float.toString(size)}
       height={Js.Float.toString(size)}
       ref={canvasRef->ReactDOMRe.Ref.domRef}
     />
-    <div>
-      {world->React.Ref.current.Types.map.Types.Map.buildings
-       ->Belt.Map.Int.valuesToArray
-       ->Belt.Array.map(building =>
-           <div key={string_of_int(building.id)}>
-             {switch (building.kind) {
-              | Exhibit(animals, name, terrain) => React.string(name)
-              | _ => React.string("unknwone building")
-              }}
-           </div>
-         )
-       ->React.array}
+    <Monitor world />
     </div>
   </div>;
 };
