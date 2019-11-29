@@ -1,5 +1,7 @@
 [@react.component]
-let make = (~world) => {
+let make = (~world: React.Ref.t(Types.world)) => {
+  Js.log(world->React.Ref.current.people);
+  Js.log(world->React.Ref.current.map);
   let (tick, setTick) = Hooks.useState(0);
   let tick = () => setTick(tick + 1);
   <div>
