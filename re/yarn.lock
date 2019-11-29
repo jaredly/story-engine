@@ -1095,9 +1095,9 @@ bs-css@^11.0.0:
   dependencies:
     emotion "^10.0.7"
 
-bs-platform@^5.2.1:
-  version "5.2.1"
-  resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-5.2.1.tgz#3f76f6d4f4c7255296375a8104c8be332770b691"
+bs-platform@jaredly/bucklescript#letop:
+  version "7.0.0-dev.2"
+  resolved "https://codeload.github.com/jaredly/bucklescript/tar.gz/32a426d4ef57097fdab11437773f4c8decaaae60"
 
 bsb-native@4.0.6:
   version "4.0.6"

@@ -1,5 +1,4 @@
 ####{BSB GENERATED: NO EDIT
-FLG -ppx /Users/jared/clone/games/story-engine/re/node_modules/let-anything/ppx
 FLG -ppx '/Users/jared/clone/games/story-engine/re/node_modules/bs-platform/lib/bsppx.exe -bs-jsx 3'
 S /Users/jared/clone/games/story-engine/re/node_modules/bs-platform/lib/ocaml
 B /Users/jared/clone/games/story-engine/re/node_modules/bs-platform/lib/ocaml

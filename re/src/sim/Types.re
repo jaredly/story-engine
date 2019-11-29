@@ -178,6 +178,7 @@ and personUpdate =
     | Condition(condition)
     | AddGoal(goal)
     | SetPosition(position)
+    // Notice
     | Remove
 
 and itemUpdate =
@@ -208,6 +209,8 @@ and person = {
     goals: list(goal),
     position,
     offset: float,
+    // updates? events? experiences?
+    experiences: list((int, personUpdate)),
 }
 
 and itemOwner =
@@ -237,6 +240,7 @@ and world = {
     rng: Prando.t,
     genId: unit => int,
     maxPeoplePerExhibit: int,
+    mutable clock: int,
     mutable peopleWhoLeft: list(person),
     mutable people: Belt.Map.Int.t(person),
     mutable animals: Belt.Map.Int.t(animal),
@@ -288,5 +292,6 @@ let person = (id, rng, position) => {
     goals: [],
     position,
     offset: rng->Prando.range(-1.0, 1.0),
+    experiences: [],
 }
 }

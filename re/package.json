@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "bs-css": "^11.0.0",
-    "bs-platform": "^5.2.1",
+    "bs-platform": "jaredly/bucklescript#letop",
     "d3-delaunay": "^5.1.6",
     "delaunator": "^4.0.1",
     "let-anything": "^1.0.3",

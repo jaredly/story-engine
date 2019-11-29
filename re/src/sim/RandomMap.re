@@ -150,13 +150,9 @@ let gen = (size, minDist, maxDist, rng) => {
   let points =
     Belt.Map.Int.fromArray(points->Belt.Array.map(item => (item.id, item)));
 
-  // Js.log3("Stuff", buildings->Belt.Map.Int.valuesToArray,
-  // points->Belt.Map.Int.valuesToArray);
-
   let points =
     buildings->Belt.Map.Int.reduce(points, (points, _, building) =>
       Belt.Map.Int.
-        // Js.log3("Building point", building.id, building.point);
         (
           points->set(
             building.point,
@@ -180,7 +176,6 @@ let gen = (size, minDist, maxDist, rng) => {
     ->Belt.Map.Int.fromArray;
 
   let pointToEdges = World.makeMapping(edges);
-  // let pointIds =
   open Belt.Map.Int;
   let map: Types.Map.map = {
     points,
@@ -189,14 +184,13 @@ let gen = (size, minDist, maxDist, rng) => {
     pointToPoint: World.pointToPoint(edges),
     buildings,
     locations: empty->set(l1, {Types.Map.id: l1, name: "the entrance"}),
-    // exits: [points->Belt.Map.Int.keysToArray[0]],
     exits: Array.to_list(exits),
   };
 
-  // map;
   let world: Types.world = {
     rng,
     genId,
+    clock: 0,
     maxPeoplePerExhibit: 20,
     peopleWhoLeft: [],
     people: empty,
@@ -206,17 +200,4 @@ let gen = (size, minDist, maxDist, rng) => {
   };
 
   world;
-  // let pointToPoint = Hashtbl.fold((key, (), edges))
-  // ctx->Canvas.Ctx.setFillStyle("white");
-  // values->Belt.Array.forEachWithIndex((index, point) => {
-  //   let poly = voronoi->Poisson.cellPolygon(index);
-  //   let touchesClip = poly->Belt.Array.some(isClipped);
-  //   if (!touchesClip) {
-  //     drawPoly(poly);
-  //     ctx->Canvas.Ctx.beginPath;
-  //     // let (x, y) = point;
-  //     // ctx->Canvas.Ctx.circle(x, y, 5.0);
-  //     // ctx->Canvas.Ctx.fill;
-  //   };
-  // });
 };

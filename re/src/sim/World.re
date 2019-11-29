@@ -33,15 +33,19 @@ let pointToPoint = edges => {
   );
 };
 
-let processPersonUpdate = (_world, person, update: Types.personUpdate) => {
+let processPersonUpdate = (world, person, update: Types.personUpdate) => {
   // Js.log2("Person update", update)
-  switch update {
+  let person = switch update {
     | AddGoal(goal) => {...person, goals: [goal, ...person.goals]}
     | SetPosition(position) => {...person, position}
     | _ => {
       Js.log2("Ignoring person update", update);
       person
     }
+  };
+  {
+    ...person,
+    experiences: [(world.clock, update), ...person.experiences]
   }
 }
 
@@ -88,6 +92,7 @@ let addPerson = world => {
 };
 
 let step = world => {
+  world.clock = world.clock + 1;
   let numBuildings = world.map.buildings->Belt.Map.Int.size;
   let maxPeople = numBuildings * world.maxPeoplePerExhibit;
   if (world.people->Belt.Map.Int.size < maxPeople && world.rng->Prando.float < 0.04) {
