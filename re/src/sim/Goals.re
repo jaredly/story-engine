@@ -10,13 +10,13 @@ let step = (world, person, goal) =>
       let goal = {...goal, updater};
       // Js.log3("Updating", ndata, updates);
       switch (result) {
-      | Failed(message) => (goal, updates, true)
-      | Succeeded(message) => (goal, updates, true)
-      | InProcess(timer) => ({...goal, timer}, updates, false)
+      | Failed(message) => (goal, updates, Some(Some(message)))
+      | Succeeded(message) => (goal, updates, Some(None))
+      | InProcess(timer) => ({...goal, timer}, updates, None)
       };
     };
   } else {
-    ({...goal, timer: goal.timer - 1}, [], false);
+    ({...goal, timer: goal.timer - 1}, [], None);
   };
 
 let speed = 4.0;
