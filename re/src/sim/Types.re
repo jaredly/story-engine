@@ -163,18 +163,27 @@ type demographics = {
   gender,
 };
 
-type goalResult =
+type exhibitResult =
+  | Satisfied
+  | Unsatisfied(string)
+
+type goalKind =
+  | Leave
+  | GoToExhibit(int, option(exhibitResult))
+
+type goalResult('result) =
   | Failed(string)
   | InProcess(int) // timer for when to recheck
-  | Succeeded(string);
+  | Succeeded(string, 'result);
 
 type goalUpdater =
-  | Goal(
-      'data,
-      ('data, person, world) =>
-      ('data, goalResult, list(goalUpdate)),
-    )
-    : goalUpdater
+  | Goal(singleGoal('state, unit)) : goalUpdater
+
+and singleGoal('state, 'output) = {
+    kind: string,
+    state: 'state,
+    updater: ('state, person, world) => ('state, goalResult('output), list(goalUpdate))
+}
 
 and goalUpdate = {
     update: worldUpdate,
@@ -185,8 +194,9 @@ and goalUpdate = {
 and goal = {
   id: int,
   name: string,
+  kind: goalKind,
   timer: int,
-  updater: goalUpdater,
+  contents: goalUpdater,
   timeStarted: int,
 }
 
