@@ -1,6 +1,7 @@
 open Types;
 
-let step = (world, person, goal) =>
+// let step: 'a 'b . (goal('a, 'b)) => (goal('a, 'b), 'extra) = (goal) => 
+let step = ((world, person), goal) => 
   if (goal.timer <= 1) {
     // Js.log("updating")
     let Goal(inner) = goal.contents;
@@ -12,14 +13,19 @@ let step = (world, person, goal) =>
       let goal = {...goal, contents};
       // Js.log3("Updating", ndata, updates);
       switch (result) {
-      | Failed(message) => (goal, updates, Some(Some(message)))
-      | Succeeded(message, ()) => (goal, updates, Some(None))
-      | InProcess(timer) => ({...goal, timer}, updates, None)
+      | Failed(message) => (goal, (updates, Some(Some(message))))
+      | Succeeded(message, result) => ({...goal, result: Some(result)}, (updates, Some(None)))
+      | InProcess(timer) => ({...goal, timer}, (updates, None))
       };
     // };
   } else {
-    ({...goal, timer: goal.timer - 1}, [], None);
+    ({...goal, timer: goal.timer - 1}, ([], None));
   };
+
+let step = (world, person, goal) => {
+  // let x: 'a 'b . goal('a, 'b) => (goal('a, 'b), 'extra) = step;
+  mapGoal(goal, (world, person), {run: step})
+}
 
 let speed = 4.0;
 
@@ -60,7 +66,7 @@ let watchTheAnimals = (bid, person, world) => {
           time,
           Succeeded(
             person.demographics.name ++ " was satisfied with the " ++ name,
-            ()
+            Satisfied
           ),
           [],
         );
@@ -209,11 +215,13 @@ let goToExhibit = (world, person, building: Types.Map.building) => {
     | None => None
     | Some(inner) =>
       // let Goal(inner) = goal;
-      Some({
+      Some(GoToExhibit({
         id: world.genId(),
         timeStarted: world.clock,
         timer: 0,
-        kind: GoToExhibit(building.id, None),
+        result: None,
+        attrs: building.id,
+        // kind: GoToExhibit(building.id, None),
         name: "go to the " ++ name,
         contents:
           Goal(chainGoals(
@@ -228,7 +236,7 @@ let goToExhibit = (world, person, building: Types.Map.building) => {
             () => watchTheAnimals(building.id),
             "Now on to watching the animals",
           )),
-      })
+      }))
     };
   | _ => assert(false)
   };
@@ -236,10 +244,10 @@ let goToExhibit = (world, person, building: Types.Map.building) => {
 
 let chooseExhibit = (world: Types.world, person: Types.person) => {
   let (satisfied, unsatisfied, failed) = person.pastGoals->Belt.List.reduce((Belt.Set.Int.empty, Belt.Map.Int.empty, Belt.Set.Int.empty), ((satisfied, unsatisfied, failed), {goal}) => {
-    switch (goal.kind) {
-      | GoToExhibit(id, Some(Unsatisfied(reason))) => (satisfied, unsatisfied->Belt.Map.Int.set(id, reason), failed)
-      | GoToExhibit(id, Some(Satisfied)) => (satisfied->Belt.Set.Int.add(id), unsatisfied, failed)
-      | GoToExhibit(id, None) => (satisfied, unsatisfied, failed->Belt.Set.Int.add(id))
+    switch (goal) {
+      | GoToExhibit({attrs: id, result: Some(Unsatisfied(reason))}) => (satisfied, unsatisfied->Belt.Map.Int.set(id, reason), failed)
+      | GoToExhibit({attrs: id, result: Some(Satisfied)}) => (satisfied->Belt.Set.Int.add(id), unsatisfied, failed)
+      | GoToExhibit({attrs: id, result: None}) => (satisfied, unsatisfied, failed->Belt.Set.Int.add(id))
       | _ => (satisfied, unsatisfied, failed)
     }
   });
@@ -279,11 +287,13 @@ let leaveGoal = (world, person) => {
     switch (goToPoint(world, person, exit)) {
     | None => None
     | Some(goal) =>
-  Some({
+  Some(Leave({
     id: world.genId(),
     timeStarted: world.clock,
     timer: 0,
-    kind: Leave,
+    // kind: Leave,
+    attrs: (),
+    result: None,
     name: "leave the zoo",
     contents:
       Goal(
@@ -298,7 +308,7 @@ let leaveGoal = (world, person) => {
           "They got in their car",
         ),
       ),
-  });
+  }));
     };
 };
 

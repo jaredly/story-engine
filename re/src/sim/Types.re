@@ -167,17 +167,17 @@ type exhibitResult =
   | Satisfied
   | Unsatisfied(string)
 
-type goalKind =
-  | Leave
-  | GoToExhibit(int, option(exhibitResult))
+// type goalKind =
+//   | Leave
+//   | GoToExhibit(int, option(exhibitResult))
 
 type goalResult('result) =
   | Failed(string)
   | InProcess(int) // timer for when to recheck
   | Succeeded(string, 'result);
 
-type goalUpdater =
-  | Goal(singleGoal('state, unit)) : goalUpdater
+type goalUpdater('result) =
+  | Goal(singleGoal('state, 'result)) : goalUpdater('result)
 
 and singleGoal('state, 'output) = {
     kind: string,
@@ -191,26 +191,33 @@ and goalUpdate = {
     trail: list(string),
 }
 
-and goal = {
+and goal('attrs, 'result) = {
   id: int,
   name: string,
-  kind: goalKind,
+  attrs: 'attrs,
+  result: option('result),
   timer: int,
-  contents: goalUpdater,
+  contents: goalUpdater('result),
   timeStarted: int,
 }
 
+and anyGoal =
+  | GoToExhibit(goal(int, exhibitResult))
+  | Leave(goal(unit ,unit))
+
 and pastGoal = {
-    goal,
-    timeStopped: int,
+    goal: anyGoal,
     failed: option(string),
+    timeStopped: int,
 }
+
+and genericGoal = GenericGoal(goal('a, 'b)) : genericGoal
 
 and personUpdate =
   | AddEmotion(emotion)
   | Characteristics(characteristics)
   | Condition(condition)
-  | AddGoal(goal)
+  | AddGoal(anyGoal)
   | SetPosition(position)
   // Notice
   | Remove
@@ -240,7 +247,7 @@ and person = {
   characteristics,
   condition,
   // knowledge: list(knowledge),
-  goals: list(goal),
+  goals: list(anyGoal),
   pastGoals: list(pastGoal),
   position,
   offset: float,
@@ -336,3 +343,19 @@ let person = (id, rng, position) => {
     experiences: [],
   };
 };
+
+let getGoal = goal => switch goal {
+  | GoToExhibit(inner) => GenericGoal(inner)
+  | Leave(inner) => GenericGoal(inner)
+};
+
+type goalMapper('input, 'extra) = {run: 'a 'b . ('input, goal('a, 'b)) => (goal('a, 'b), 'extra) };
+
+let mapGoal = (goal, input, f) => switch goal {
+  | GoToExhibit(inner) => 
+  let (inner, extra) = f.run(input, inner);
+  (GoToExhibit(inner), extra)
+  | Leave(inner) => 
+  let (inner, extra) = f.run(input, inner);
+  (Leave(inner), extra)
+}

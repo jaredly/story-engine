@@ -9,7 +9,7 @@ let step = (world, person: Types.person) => {
   switch (person.goals) {
   | [] => (person, [])
   | [goal, ...rest] =>
-    let (goal, updates, finished) = Goals.step(world, person, goal);
+    let (goal, (updates, finished)) = Goals.step(world, person, goal);
     let (goals, pastGoals) =
       switch (finished) {
       | None => ([goal, ...rest], [])
@@ -25,13 +25,13 @@ let step = (world, person: Types.person) => {
           | Some(goal) =>
             updates
             @ [
-              {
-                trail: [],
-                update:
-                  Message(
-                    person.demographics.name ++ " decided to " ++ goal.name,
-                  ),
-              },
+              // {
+              //   trail: [],
+              //   update:
+              //     Message(
+              //       person.demographics.name ++ " decided to " ++ goal.name,
+              //     ),
+              // },
               {trail: [], update: Types.Updates.addGoal(person.id, goal)},
             ]
           }
