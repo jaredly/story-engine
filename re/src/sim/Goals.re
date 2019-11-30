@@ -1,29 +1,24 @@
 open Types;
 
-// let step: 'a 'b . (goal('a, 'b)) => (goal('a, 'b), 'extra) = (goal) => 
-let step = ((world, person), goal) => 
+let step = ((world, person), goal) =>
   if (goal.timer <= 1) {
-    // Js.log("updating")
     let Goal(inner) = goal.contents;
-    // switch (inner.updater) {
-    // | Goal(data, fn) =>
-      let (ndata, result, updates) = inner.updater(inner.state, person, world);
-      let contents = Goal({...inner, state: ndata});
-      // let updater = Goal(ndata, fn);
-      let goal = {...goal, contents};
-      // Js.log3("Updating", ndata, updates);
-      switch (result) {
-      | Failed(message) => (goal, (updates, Some(Some(message))))
-      | Succeeded(message, result) => ({...goal, result: Some(result)}, (updates, Some(None)))
-      | InProcess(timer) => ({...goal, timer}, (updates, None))
-      };
-    // };
+    let (ndata, result, updates) = inner.updater(inner.state, person, world);
+    let contents = Goal({...inner, state: ndata});
+    let goal = {...goal, contents};
+    switch (result) {
+    | Failed(message) => (goal, (updates, Some(Some(message))))
+    | Succeeded(message, result) => (
+        {...goal, result: Some(result)},
+        (updates, Some(None)),
+      )
+    | InProcess(timer) => ({...goal, timer}, (updates, None))
+    };
   } else {
     ({...goal, timer: goal.timer - 1}, ([], None));
   };
 
 let step = (world, person, goal) => {
-  // let x: 'a 'b . goal('a, 'b) => (goal('a, 'b), 'extra) = step;
   mapGoal(goal, (world, person), {run: step})
 }
 
