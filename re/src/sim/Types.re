@@ -217,6 +217,9 @@ type animal = {
   visibility: float,
 };
 
+type observation =
+  | AnimalAction(string, int, animalBehavior);
+
 type goalResult('result) =
   | Failed(string)
   | InProcess(int) // timer for when to recheck
@@ -262,9 +265,10 @@ and genericGoal = GenericGoal(goal('a, 'b)) : genericGoal
 and personUpdate =
   | AddEmotion(emotion)
   | Characteristics(characteristics)
-  | Observe(string)
+  | Observe(observation)
   | Condition(condition)
   | AddGoal(anyGoal)
+  // FinishGoal(anyGoal)
   | SetPosition(position)
   // Notice
   | Remove
@@ -285,6 +289,12 @@ and position = {
   progress: float,
 }
 
+and personExperience = {
+  time: int,
+  goalTrail: list(string),
+  update: personUpdate,
+}
+
 and person = {
   id: int,
   demographics,
@@ -300,7 +310,7 @@ and person = {
   offset: float,
   // updates? events? experiences?
   // time, trail, personUpdate
-  experiences: list((int, list(string), personUpdate)),
+  experiences: list(personExperience),
 }
 
 and itemOwner =
@@ -317,6 +327,7 @@ and world = {
   rng: Prando.t,
   genId: unit => int,
   maxPeoplePerExhibit: int,
+  /** Minutes since opening time, at 9am */
   mutable clock: int,
   mutable peopleWhoLeft: list(person),
   mutable people: Belt.Map.Int.t(person),
@@ -400,11 +411,15 @@ let showGoal = goal => switch goal {
   | Leave({attrs}) => "Leave the zoo by exit " ++ string_of_int(attrs)
 };
 
+let showObservation = fun
+  | AnimalAction(name, count, behavior) => string_of_int(count) ++ " " ++ name ++ "s " ++ showBehavior(behavior);
+
 let showPersonUpdate = fun
   | AddEmotion(emotion) => "Add emotion"
   | Characteristics(characteristics) => "Characteristics"
   | Condition(condition) => "Condition"
   | AddGoal(anyGoal) => "Add goal " ++ showGoal(anyGoal)
   | SetPosition(position) => "Set position"
+  | Observe(observation) => "Observe " ++ showObservation(observation)
   // Notice
   | Remove => "Remove"

@@ -38,6 +38,7 @@ let processPersonUpdate = (world, person, trail, update: Types.personUpdate) => 
   let person = switch update {
     | AddGoal(goal) => {...person, goals: [goal, ...person.goals]}
     | SetPosition(position) => {...person, position}
+    | Observe(_) => person
     | _ => {
       Js.log2("Ignoring person update", update);
       person
@@ -45,7 +46,7 @@ let processPersonUpdate = (world, person, trail, update: Types.personUpdate) => 
   };
   {
     ...person,
-    experiences: [(world.clock, trail, update), ...person.experiences]
+    experiences: [{time: world.clock, goalTrail: trail, update}, ...person.experiences]
   }
 }
 

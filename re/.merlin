@@ -12,6 +12,8 @@ S src
 B lib/bs/src
 S src/sim
 B lib/bs/src/sim
+S src/gen
+B lib/bs/src/gen
 S src/utils
 B lib/bs/src/utils
 S src/ui

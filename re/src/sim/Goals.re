@@ -61,12 +61,12 @@ let watchTheAnimals = (bid, person, world) => {
       ->Belt.List.keepMap(world.animals->Belt.Map.Int.get)
       ->Belt.List.keep(animal => animal.visibility > 0.2 && Types.behaviorIsInteresting(animal.behavior));
       let updates = interestingAnimals->Belt.List.map(a => {
-        {update: Message("saw a " ++ a.kind ++ " " ++ showBehavior(a.behavior)), trail: [kind]}
+        {update: Person(person.id, Observe(AnimalAction(a.kind, 1, a.behavior))), trail: [kind]}
       });
       let enjoyment = enjoyment + interestingAnimals->Belt.List.length;
       // TODO check their patience, etc.
       if (time > maxTime) {
-        Js.log3(name, time, enjoyment);
+        // Js.log3(name, time, enjoyment);
         (
           (time, enjoyment, maxTime),
           Succeeded(

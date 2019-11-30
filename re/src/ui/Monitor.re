@@ -20,22 +20,43 @@ module Expander = {
   }
 }
 
+module Narrative = {
+  [@react.component]
+  let make = (~narrative: Story.narrative) => {
+    <div>
+      <h3>
+        {str(narrative.title)}
+      </h3>
+      <section>
+        {narrative.body->Belt.List.toArray
+        ->Belt.Array.map(p => (
+          <p>
+            {str(String.concat(" ", p))}
+          </p>
+        ))
+        ->React.array}
+      </section>
+    </div>
+  }
+}
+
 module Person = {
   [@react.component]
-  let make = (~person: Types.person) => {
+  let make = (~world, ~person: Types.person) => {
     <Expander
       header={str(person.demographics.name)}
       renderBody={() => {
         <div>
-          {person.experiences
-           ->Belt.List.toArray
-           ->Belt.Array.mapWithIndex((i, (time, trail, personUpdate)) => {
-              <div key={string_of_int(i)}>
-               {str(trail |> String.concat(" <- "))}
-               {str(Types.showPersonUpdate(personUpdate))}
-              </div>
-             })
-           ->React.array}
+          <Narrative narrative={Story.narrate(person, world)} />
+          // {person.experiences
+          //  ->Belt.List.toArray
+          //  ->Belt.Array.mapWithIndex((i, {time, goalTrail, update}) => {
+          //     <div key={string_of_int(i)}>
+          //     //  {str(trail |> String.concat(" <- "))}
+          //      {str(Types.showPersonUpdate(update))}
+          //     </div>
+          //    })
+          //  ->React.array}
         </div>
       }}
     />;
@@ -114,7 +135,7 @@ let make = (~world: React.Ref.t(Types.world)) => {
       {world.people
        ->Belt.Map.Int.valuesToArray
        ->Belt.Array.map(person =>
-           <Person person key={string_of_int(person.id)}/>
+           <Person world person key={string_of_int(person.id)}/>
               // {React.string(person.demographics.name)} </div>
              // {React.string(string_of_int(person.id))}
          )
