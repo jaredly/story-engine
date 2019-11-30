@@ -174,6 +174,10 @@ type animalBehavior =
   | Eating
   | Playing
 
+let behaviorIsInteresting = fun
+  | Eating | Playing => true
+  | _ => false;
+
 let showBehavior = fun
   | Sleeping => "sleeping"
   | Sitting => "sitting"
@@ -187,13 +191,13 @@ let behaviors = [|
   Sleeping,
   Sleeping,
   Sleeping,
-  Sleeping,
-  Sleeping,
-  Sleeping,
-  Sitting,
-  Sitting,
-  Sitting,
-  Sitting,
+  // Sleeping,
+  // Sleeping,
+  // Sleeping,
+  // Sitting,
+  // Sitting,
+  // Sitting,
+  // Sitting,
   Sitting,
   Sitting,
   Sitting,
@@ -258,6 +262,7 @@ and genericGoal = GenericGoal(goal('a, 'b)) : genericGoal
 and personUpdate =
   | AddEmotion(emotion)
   | Characteristics(characteristics)
+  | Observe(string)
   | Condition(condition)
   | AddGoal(anyGoal)
   | SetPosition(position)

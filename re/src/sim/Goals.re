@@ -45,30 +45,41 @@ let point = (position, edge: Types.Map.edge) =>
   position.progress < 0.5 ? edge.source : edge.dest;
 
 let watchTheAnimals = (bid, person, world) => {
-  let (name, terrain) =
+  let (aids, name, terrain) =
     switch (world.map.buildings->Belt.Map.Int.getExn(bid).kind) {
-    | Exhibit(_, name, terrain) => (name, terrain)
+    | Exhibit(aids, name, terrain) => (aids, name, terrain)
     | _ => assert(false)
     };
+  let kind = "watchTheAnimals";
   {
-    kind: "watchTheAnimals",
-    state: 0,
+    kind,
+    state: (0, 0, world.rng->Prando.int(20, 50)),
     updater: 
-    (time, person, world) =>
+    ((time, enjoyment, maxTime), person, world) => {
+      let interestingAnimals = aids
+      ->Belt.Set.Int.toList
+      ->Belt.List.keepMap(world.animals->Belt.Map.Int.get)
+      ->Belt.List.keep(animal => animal.visibility > 0.2 && Types.behaviorIsInteresting(animal.behavior));
+      let updates = interestingAnimals->Belt.List.map(a => {
+        {update: Message("saw a " ++ a.kind ++ " " ++ showBehavior(a.behavior)), trail: [kind]}
+      });
+      let enjoyment = enjoyment + interestingAnimals->Belt.List.length;
       // TODO check their patience, etc.
-      if (time > 20) {
+      if (time > maxTime) {
+        Js.log3(name, time, enjoyment);
         (
-          time,
+          (time, enjoyment, maxTime),
           Succeeded(
             person.demographics.name ++ " was satisfied with the " ++ name,
-            Satisfied
+            enjoyment > 10 ? Satisfied : Unsatisfied("no interesting animals")
           ),
-          [],
+          updates,
         );
       } else {
-        let num = world.rng->Prando.int(2, 10);
-        (time + num, InProcess(num), []);
-      },
+        let num = world.rng->Prando.int(1, 4);
+        ((time + num, enjoyment, maxTime), InProcess(num), updates);
+      }
+    }
   };
 };
 
@@ -82,10 +93,6 @@ let goToPoint = (world, person, pid): option(Types.singleGoal('a, 'b)) => {
   | Some(path) =>
     let path = path->Array.to_list;
     Some({
-      // name: "go to a certain place",
-      // timer: 1,
-      // contents:
-      //   Goal({
           kind: "goToPoint",
           state: path,
           updater: (path, person, world) => {

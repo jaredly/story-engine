@@ -96,25 +96,36 @@ let step = world => {
   world.clock = world.clock + 1;
   let numBuildings = world.map.buildings->Belt.Map.Int.size;
   let maxPeople = numBuildings * world.maxPeoplePerExhibit;
-  if (world.people->Belt.Map.Int.size < maxPeople && world.rng->Prando.float < 0.04) {
+  if (world.people->Belt.Map.Int.size < maxPeople
+      && world.rng->Prando.float < 0.04) {
     world->addPerson;
   };
-  world.animals = world.animals->map(animal => {
-    if (animal.behaviorTimer <= 0) {
-      {...animal, behaviorTimer: world.rng->Prando.int(5, 50), behavior: world.rng->Prando.choose(Types.behaviors)}
-    } else {
-      {...animal, behaviorTimer: animal.behaviorTimer - 1}
-    }
-  });
-  let changes = world.people->keysToArray->Belt.Array.reduce([], (changes, pid) => {
-    switch (world.people->get(pid)) {
-      | None => changes
-      | Some(person) =>
-        let (person, updates) = Person.step(world, person);
-        world.people = world.people->set(pid, person);
-        changes @ updates
-    }
-  });
+  world.animals =
+    world.animals
+    ->map(animal =>
+        if (animal.behaviorTimer <= 0) {
+          {
+            ...animal,
+            behaviorTimer: world.rng->Prando.int(5, 50),
+            behavior: world.rng->Prando.choose(Types.behaviors),
+            visibility: world.rng->Prando.float,
+          };
+        } else {
+          {...animal, behaviorTimer: animal.behaviorTimer - 1};
+        }
+      );
+  let changes =
+    world.people
+    ->keysToArray
+    ->Belt.Array.reduce([], (changes, pid) => {
+        switch (world.people->get(pid)) {
+        | None => changes
+        | Some(person) =>
+          let (person, updates) = Person.step(world, person);
+          world.people = world.people->set(pid, person);
+          changes @ updates;
+        }
+      });
   // Js.log2("Changes", List.length(changes))
   changes->Belt.List.forEach(world->processUpdate);
   ();

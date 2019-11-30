@@ -12,7 +12,6 @@ module Expander = {
         </div>
         {renderBody()}
       </div>
-
     } else {
       <div onClick={_ => setOpen(true)} className=Css.(style([cursor(`pointer), padding(px(8))]))>
         {header}
@@ -56,7 +55,6 @@ module Building = {
           {switch building.kind {
             | FoodStand(_) => React.null
             | Exhibit(animals, name, terrain) =>
-            // Js.log(animals->Belt.Set.Int.toArray);
               React.array(
                 animals->Belt.Set.Int.toArray
                 ->Belt.Array.keepMap(world.animals->Belt.Map.Int.get)
@@ -68,6 +66,16 @@ module Building = {
                 ))
               )
           }}
+          {
+            let experiences = world.people->Belt.Map.Int.reduce([], (col, _, person) => {
+              person.pastGoals->Belt.List.keepMap(pastGoal => switch (pastGoal.goal) {
+                | GoToExhibit({result: Some(result)}) => Some(result)
+                | _ => None
+              })
+            });
+            let good = experiences->Belt.List.keep(ex => switch ex { | Satisfied => true | _ => false });
+            str("Experiences: " ++ string_of_int(List.length(good)) ++ "/" ++ string_of_int(List.length(experiences)))
+          }
         </div>
       }}
     />
