@@ -170,17 +170,38 @@ type exhibitResult =
 type animalBehavior =
   | Sleeping
   | Moving
+  | Sitting
   | Eating
   | Playing
 
 let showBehavior = fun
-  | Sleeping => "Sleeping"
-  | Moving => "Moving"
-  | Eating => "Eating"
-  | Playing => "Playing";
+  | Sleeping => "sleeping"
+  | Sitting => "sitting"
+  | Moving => "moving"
+  | Eating => "eating"
+  | Playing => "playing";
 
 let behaviors = [|
-  Sleeping, Moving, Eating, Playing
+  Sleeping,
+  Sleeping,
+  Sleeping,
+  Sleeping,
+  Sleeping,
+  Sleeping,
+  Sleeping,
+  Sleeping,
+  Sitting,
+  Sitting,
+  Sitting,
+  Sitting,
+  Sitting,
+  Sitting,
+  Sitting,
+  Sitting,
+  Moving,
+  Eating,
+  Eating,
+  Playing
 |];
 
 type animal = {
@@ -224,7 +245,7 @@ and goal('attrs, 'result) = {
 
 and anyGoal =
   | GoToExhibit(goal(int, exhibitResult))
-  | Leave(goal(unit ,unit))
+  | Leave(goal(int, unit))
 
 and pastGoal = {
     goal: anyGoal,
@@ -369,11 +390,16 @@ let mapGoal = (goal, input, f) => switch goal {
   (Leave(inner), extra)
 }
 
+let showGoal = goal => switch goal {
+  | GoToExhibit({attrs}) => "Go to exhibit " ++ string_of_int(attrs)
+  | Leave({attrs}) => "Leave the zoo by exit " ++ string_of_int(attrs)
+};
+
 let showPersonUpdate = fun
   | AddEmotion(emotion) => "Add emotion"
   | Characteristics(characteristics) => "Characteristics"
   | Condition(condition) => "Condition"
-  | AddGoal(anyGoal) => "Add goal"
+  | AddGoal(anyGoal) => "Add goal " ++ showGoal(anyGoal)
   | SetPosition(position) => "Set position"
   // Notice
   | Remove => "Remove"

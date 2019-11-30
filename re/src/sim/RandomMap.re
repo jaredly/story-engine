@@ -108,7 +108,7 @@ let gen = (size, minDist, maxDist, rng) => {
       ~start=0,
       ~end_=Array.length(internalPoints) * 2 / 3,
     );
-  let (animals, buildings) =
+  let (animalMap, buildings) =
     buildingPoints->Belt.Array.reduce(
       (Belt.Map.Int.empty, Belt.Map.Int.empty),
       ((animalMap, map), idx) => {
@@ -119,14 +119,14 @@ let gen = (size, minDist, maxDist, rng) => {
                        ~remove=1,
                        ~add=[||],
                      )[0];
-        let count = rng->Prando.int(2, 10);
+        let count = rng->Prando.int(1, 5);
         let (animalIds, animalMap) =
           Prando.rangeList(count)
           ->Belt.List.reduce(
               ([], animalMap),
               ((ids, map), _) => {
                 let aid = genId();
-                ([aid, ...ids], animalMap->Belt.Map.Int.set(
+                ([aid, ...ids], map->Belt.Map.Int.set(
                   aid,
                   {
                     Types.exhibit: id,
@@ -139,6 +139,7 @@ let gen = (size, minDist, maxDist, rng) => {
                 ));
               },
             );
+        // Js.log(animalIds);
         let map = map->Belt.Map.Int.set(
           id,
           {
@@ -148,7 +149,12 @@ let gen = (size, minDist, maxDist, rng) => {
               Exhibit(
                 Belt.Set.Int.fromArray(Array.of_list(animalIds)),
                 animal##name ++ " exhibit",
-                "grass and tall trees",
+                rng->Prando.choose([|
+                  "forest",
+                  "grassland",
+                  "prarie",
+                  "stream"
+                |]),
               ),
           },
         );
@@ -212,7 +218,7 @@ let gen = (size, minDist, maxDist, rng) => {
     maxPeoplePerExhibit: 20,
     peopleWhoLeft: [],
     people: empty,
-    animals: empty,
+    animals: animalMap,
     items: empty,
     map,
   };

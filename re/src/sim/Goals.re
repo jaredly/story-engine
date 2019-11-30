@@ -287,7 +287,7 @@ let leaveGoal = (world, person) => {
     timeStarted: world.clock,
     timer: 0,
     // kind: Leave,
-    attrs: (),
+    attrs: exit,
     result: None,
     name: "leave the zoo",
     contents:
