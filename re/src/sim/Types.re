@@ -167,9 +167,30 @@ type exhibitResult =
   | Satisfied
   | Unsatisfied(string)
 
-// type goalKind =
-//   | Leave
-//   | GoToExhibit(int, option(exhibitResult))
+type animalBehavior =
+  | Sleeping
+  | Moving
+  | Eating
+  | Playing
+
+let showBehavior = fun
+  | Sleeping => "Sleeping"
+  | Moving => "Moving"
+  | Eating => "Eating"
+  | Playing => "Playing";
+
+let behaviors = [|
+  Sleeping, Moving, Eating, Playing
+|];
+
+type animal = {
+  id: int,
+  exhibit: int,
+  kind: string,
+  behavior: animalBehavior,
+  behaviorTimer: int,
+  visibility: float,
+};
 
 type goalResult('result) =
   | Failed(string)
@@ -252,6 +273,7 @@ and person = {
   position,
   offset: float,
   // updates? events? experiences?
+  // time, trail, personUpdate
   experiences: list((int, list(string), personUpdate)),
 }
 
@@ -263,19 +285,6 @@ and item = {
   id: int,
   name: string,
   owner: itemOwner,
-}
-
-and animalKind =
-  | SpiderMonkey
-  | Gorilla
-  | Antelope
-  | Giraffe
-  | HammerHeadShark
-
-and animal = {
-  id: int,
-  exhibit: int,
-  kind: animalKind,
 }
 
 and world = {
@@ -359,3 +368,12 @@ let mapGoal = (goal, input, f) => switch goal {
   let (inner, extra) = f.run(input, inner);
   (Leave(inner), extra)
 }
+
+let showPersonUpdate = fun
+  | AddEmotion(emotion) => "Add emotion"
+  | Characteristics(characteristics) => "Characteristics"
+  | Condition(condition) => "Condition"
+  | AddGoal(anyGoal) => "Add goal"
+  | SetPosition(position) => "Set position"
+  // Notice
+  | Remove => "Remove"

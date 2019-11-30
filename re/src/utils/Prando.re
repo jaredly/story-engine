@@ -19,3 +19,7 @@ external choose: (t, array('a)) => 'a = "nextArrayItem";
 
 [@bs.send]
 external reset: t => unit = "reset";
+
+let rec rangeList = num => {
+  num <= 0 ? [] : [num, ...rangeList(num - 1)]
+};

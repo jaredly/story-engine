@@ -108,10 +108,10 @@ let gen = (size, minDist, maxDist, rng) => {
       ~start=0,
       ~end_=Array.length(internalPoints) * 2 / 3,
     );
-  let buildings =
+  let (animals, buildings) =
     buildingPoints->Belt.Array.reduce(
-      Belt.Map.Int.empty,
-      (map, idx) => {
+      (Belt.Map.Int.empty, Belt.Map.Int.empty),
+      ((animalMap, map), idx) => {
         let id = genId();
         let aidx = rng->Prando.int(0, Array.length(animals) - 1);
         let animal = animals->Js.Array2.spliceInPlace(
@@ -119,19 +119,40 @@ let gen = (size, minDist, maxDist, rng) => {
                        ~remove=1,
                        ~add=[||],
                      )[0];
-        map->Belt.Map.Int.set(
+        let count = rng->Prando.int(2, 10);
+        let (animalIds, animalMap) =
+          Prando.rangeList(count)
+          ->Belt.List.reduce(
+              ([], animalMap),
+              ((ids, map), _) => {
+                let aid = genId();
+                ([aid, ...ids], animalMap->Belt.Map.Int.set(
+                  aid,
+                  {
+                    Types.exhibit: id,
+                    id: aid,
+                    kind: animal##name,
+                    behavior: rng->Prando.choose(Types.behaviors),
+                    behaviorTimer: rng->Prando.int(10, 50),
+                    visibility: rng->Prando.float,
+                  },
+                ));
+              },
+            );
+        let map = map->Belt.Map.Int.set(
           id,
           {
             Types.Map.point: idx,
             id,
             kind:
               Exhibit(
-                Belt.Set.Int.empty,
+                Belt.Set.Int.fromArray(Array.of_list(animalIds)),
                 animal##name ++ " exhibit",
                 "grass and tall trees",
               ),
           },
         );
+        (animalMap, map)
       },
     );
 

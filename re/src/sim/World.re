@@ -98,7 +98,14 @@ let step = world => {
   let maxPeople = numBuildings * world.maxPeoplePerExhibit;
   if (world.people->Belt.Map.Int.size < maxPeople && world.rng->Prando.float < 0.04) {
     world->addPerson;
-  }
+  };
+  world.animals = world.animals->map(animal => {
+    if (animal.behaviorTimer <= 0) {
+      {...animal, behaviorTimer: world.rng->Prando.int(5, 50), behavior: world.rng->Prando.choose(Types.behaviors)}
+    } else {
+      {...animal, behaviorTimer: animal.behaviorTimer - 1}
+    }
+  });
   let changes = world.people->keysToArray->Belt.Array.reduce([], (changes, pid) => {
     switch (world.people->get(pid)) {
       | None => changes
