@@ -7,6 +7,14 @@
       font-weight: 200;
       font-size: 20px;
     }
+    @media print {
+      .zoo-title {
+        page-break-before: always;
+      }
+      .book-toc {
+        page-break-after: always;
+      }
+    }
   </style>
 
   <div id="root"></div>

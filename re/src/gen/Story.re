@@ -178,6 +178,19 @@ let narrateExperiences = (rng, world, person, experiences) => {
 // Also, different "reporters" will have different threshholds for how interesting something
 // has to be in order to report on it?
 
+let timeOfDay = time => {
+  let hour = ticksToMinutes(time) /. 60.0 +. 9.;
+  if (hour < 11.) {
+    "in the morning"
+  } else if (hour < 13.) {
+    "around noon"
+  } else if (hour < 16.) {
+    "in the afternoon"
+  } else {
+    "about an hour before the zoo closed"
+  }
+}
+
 let narrate = (world: world, person: person): narrative => {
   let rng = Prando.make(person.arrivalTime);
   let title = "A zoo story";
@@ -191,9 +204,12 @@ let narrate = (world: world, person: person): narrative => {
   ? (avgSat > 0.5 ? 1 : 5)
   : int_of_float(Js.Math.round(avgSat *. 4.)) + 1;
   let body = [
-    [
-      "I entered the zoo at " ++ clockTime(person.arrivalTime) ++ "."
-    ] @
+    rng->Prando.choose([|
+      ["I entered the zoo at " ++ clockTime(person.arrivalTime) ++ "." ],
+      ["I arrived at the zoo " ++ timeOfDay(person.arrivalTime) ++ "." ],
+      [],
+    |])
+     @
     narrateExperiences(rng, world, person, experiences)
     // (experiences->collapseExperiences->Belt.List.keepMap(narrateExperience(world)))
   ];

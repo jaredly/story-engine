@@ -16,6 +16,7 @@ type zoo = {
   world: Types.world,
   narratives: list((Types.person, Story.narrative)),
   wordCount: int,
+  size: float,
   city: city,
 }
 
@@ -44,6 +45,7 @@ let makeZoos = () => {
     let zoo = {
       world,
       narratives,
+      size,
       wordCount:
         narratives->Belt.List.reduce(0, (a, (_, b)) => a + b.wordCount),
       city,
@@ -59,13 +61,29 @@ let makeZoos = () => {
 module Zoo = {
   [@react.component]
   let make = (~zoo) => {
+    let canvasRef = React.useRef(Js.Nullable.null);
+
+    React.useEffect1(
+      () => {
+        switch (canvasRef->React.Ref.current->Js.Nullable.toOption) {
+        | None => ()
+        | Some(canvas) =>
+          let ctx = Canvas.getContext(Obj.magic(canvas));
+          ctx->Canvas.Ctx.clearRect(0.0, 0.0, zoo.size, zoo.size);
+          Draw.world(ctx, zoo.world);
+        };
+        None;
+      },
+      [||],
+    );
+
     <div>
-      <div className=Css.(style([
+      <div className=(Css.(style([
         fontSize(px(48)),
         marginBottom(px(32)),
         textAlign(`center),
         fontWeight(`bold),
-      ]))>
+      ])) ++ " zoo-title")>
         {React.string(
            "The " ++ zoo.city##city ++ ", " ++ zoo.city##state ++ " Zoo",
          )}
@@ -79,6 +97,17 @@ module Zoo = {
           | Exhibit({name}) => Some(name)
           | _ => None
         })->Belt.List.fromArray |> String.concat(", ") |> React.string}
+      </div>
+      <div className=Css.(style([
+        display(`flex),
+        flexDirection(`column),
+        alignItems(`center)
+      ]))>
+      <canvas
+        width={Js.Float.toString(zoo.size +. 20.)}
+        height={Js.Float.toString(zoo.size +. 20.)}
+        ref={canvasRef->ReactDOMRe.Ref.domRef}
+      />
       </div>
       // {React.string(string_of_int(zoo.wordCount) ++ " words")}
       // {React.string(string_of_int(zoo.narratives->List.length) ++ " narratives")}
@@ -99,6 +128,12 @@ module Zoo = {
 [@react.component]
 let make = (~zoos) => {
   <div>
+    <div className="book-toc">
+      <h1 className=Css.(style([
+        fontSize(px(64))
+      ]))>{React.string("Zoos Reviews")}</h1>
+      <h3>{React.string("a generated work of fiction, by Jared Forsyth")}</h3>
+    </div>
     // {zoos->Belt.List.length->string_of_int->React.string}
     {zoos->Belt.List.toArray->Belt.Array.mapWithIndex((i, zoo) => <Zoo key={string_of_int(i)} zoo />)->React.array}
   </div>;
