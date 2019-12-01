@@ -38,7 +38,7 @@ let processPersonUpdate = (world, person, trail, update: Types.personUpdate) => 
   let person = switch update {
     | AddGoal(goal) => {...person, goals: [goal, ...person.goals]}
     | SetPosition(position) => {...person, position}
-    | Observe(_) => person
+    | RemoveGoal(_) | Observe(_) => person
     | _ => {
       Js.log2("Ignoring person update", update);
       person
@@ -81,7 +81,7 @@ let addPerson = world => {
   let person = Types.person(id, world.rng, {
     edge,
     progress: world.map.edges->getExn(edge).source == exit ? 0.0 : 1.0,
-  });
+  }, world.clock);
   world.people =
     world.people
     ->set(id, person);
@@ -97,10 +97,10 @@ let step = world => {
   world.clock = world.clock + 1;
   let numBuildings = world.map.buildings->Belt.Map.Int.size;
   let maxPeople = numBuildings * world.maxPeoplePerExhibit;
-  if (world.people->Belt.Map.Int.size < maxPeople
-      && world.rng->Prando.float < 0.04) {
-    world->addPerson;
-  };
+  // if (world.people->Belt.Map.Int.size < maxPeople
+  //     && world.rng->Prando.float < 0.04) {
+  //   world->addPerson;
+  // };
   world.animals =
     world.animals
     ->map(animal =>

@@ -4,6 +4,7 @@ module Config = {
     size: float,
     minDist: float,
     maxPeoplePerExhibit: int,
+    // paused: option(int),
   };
 
   let default = {
@@ -11,11 +12,12 @@ module Config = {
     size: 500.0,
     minDist: 75.0,
     maxPeoplePerExhibit: 20,
+    // paused: None,
   };
 
   let parse = hash => {
-    switch (hash->Js.String2.split(":")) {
-    | [|seed, size, minDist, maxPeople|] =>
+    switch (hash->Js.String2.split(":")->Array.to_list) {
+    | [seed, size, minDist, maxPeople, ...rest] =>
       switch (
         int_of_string(seed),
         float_of_string(size),
@@ -24,23 +26,29 @@ module Config = {
       ) {
       | exception _ => None
       | (seed, size, minDist, maxPeoplePerExhibit) =>
-        Some({seed, size, minDist, maxPeoplePerExhibit})
+        Some(({seed, size, minDist, maxPeoplePerExhibit,
+        }, 
+          switch rest {
+            | [one] => Some(int_of_string(one))
+            | _ => None
+          }
+        ))
       }
     | _ => None
     };
   };
 
-  let stringify = ({seed, size, minDist, maxPeoplePerExhibit}) =>
-    [
+  let stringify = ({seed, size, minDist, maxPeoplePerExhibit}, paused) =>
+    ([
       string_of_int(seed),
       Js.Float.toString(size),
       Js.Float.toString(minDist),
       string_of_int(maxPeoplePerExhibit),
-    ]
+    ] @ switch paused { | None => [] | Some(x) => [string_of_int(x)]})
     |> String.concat(":");
 };
 
-let makeWorld = ({Config.size, minDist, seed, maxPeoplePerExhibit}) => {
+let makeWorld = ({Config.size, minDist, seed, maxPeoplePerExhibit}, paused) => {
   let rng = Prando.make(seed);
   // let world = RandomMap.gen(size, 180.0, 380.0, rng);
   let world = {
@@ -48,30 +56,42 @@ let makeWorld = ({Config.size, minDist, seed, maxPeoplePerExhibit}) => {
     maxPeoplePerExhibit,
   };
   world->World.addPerson;
+  switch (paused) {
+    | None => ()
+    | Some(x) => for (_ in 0 to x) {
+      world->World.step
+    }
+  }
   world;
 };
 
 [@react.component]
 let make = () => {
-  let initialConfig =
+  let (initialConfig, initialPaused) =
     React.useMemo(() => {
       switch (
         Config.parse(Web.Location.hash()->Js.String2.sliceToEnd(~from=1))
       ) {
-      | None => Config.default
+      | None => (Config.default, None)
       | Some(x) => x
       }
     });
+  let (paused, setPaused) = Hooks.useState(initialPaused)
   let (config, setConfig) = Hooks.useState(initialConfig);
   // let (size, setSize) = Hooks.useState(500.0);
   // let (minDist, setMinDist) = Hooks.useState(75.0);
   // let (seed, setSeed) = Hooks.useState(100);
 
+  let setPaused = paused => {
+      Web.Location.setHash(Config.stringify(config, paused));
+      setPaused(paused);
+  };
+
   let (speed, setSpeed) = Hooks.useState(20);
 
   let canvasRef = React.useRef(Js.Nullable.null);
 
-  let initialWorld = React.useMemo(() => makeWorld(config));
+  let initialWorld = React.useMemo(() => makeWorld(config, paused));
   let world = React.useRef(initialWorld);
 
   let draw = () => {
@@ -88,31 +108,38 @@ let make = () => {
     for (_ in 0 to count) {
       world->React.Ref.current->World.step;
     };
+    if (paused != None) {
+      setPaused(Some(world->React.Ref.current.clock))
+    };
+    draw();
   };
 
   React.useEffect1(
     () => {
-      world->React.Ref.setCurrent(makeWorld(config));
+      world->React.Ref.setCurrent(makeWorld(config, paused));
       draw();
-      Web.Location.setHash(Config.stringify(config));
+      Web.Location.setHash(Config.stringify(config, paused));
       None;
     },
     [|config|],
   );
 
-  React.useEffect1(
-    () => {
-      let id =
-        Js.Global.setInterval(
-          () => {
-            world->React.Ref.current->World.step;
-            draw();
-          },
-          1000 / speed,
-        );
-      Some(() => Js.Global.clearInterval(id));
-    },
-    [|speed|],
+  React.useEffect2(
+    () =>
+      if (paused == None) {
+        let id =
+          Js.Global.setInterval(
+            () => {
+              world->React.Ref.current->World.step;
+              draw();
+            },
+            1000 / speed,
+          );
+        Some(() => Js.Global.clearInterval(id));
+      } else {
+        None;
+      },
+    (speed, paused),
   );
 
   <div>
@@ -131,6 +158,11 @@ let make = () => {
         }
       />
       {React.string(string_of_int(config.seed))}
+      <button onClick={_ => {
+        setPaused(paused == None ? Some(world->React.Ref.current.clock) : None)
+      }}>
+        {React.string(paused == None ? "Pause" : "Play")}
+      </button>
     </div>
     <div>
       {React.string("Size")}

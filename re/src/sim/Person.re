@@ -10,13 +10,20 @@ let step = (world, person: Types.person) => {
   | [] => (person, [])
   | [goal, ...rest] =>
     let (goal, (updates, finished)) = Goals.step(world, person, goal);
-    let (goals, pastGoals) =
+    let (goals, pastGoals, updates) =
       switch (finished) {
-      | None => ([goal, ...rest], [])
+      | None => ([goal, ...rest], [], updates)
       | Some(failed) => (
           rest,
           [{Types.goal, failed, timeStopped: world.clock}],
+          updates @ [{update: Types.Person(person.id, RemoveGoal(goal)), trail: []}]
         )
+      };
+    let person = {
+        ...person,
+        goals,
+        condition: stepCondition(person.condition, world.rng),
+        pastGoals: pastGoals @ person.pastGoals,
       };
     let updates =
       goals == []
@@ -37,12 +44,7 @@ let step = (world, person: Types.person) => {
           }
         : updates;
     (
-      {
-        ...person,
-        goals,
-        condition: stepCondition(person.condition, world.rng),
-        pastGoals: pastGoals @ person.pastGoals,
-      },
+      person,
       updates,
     );
   };

@@ -186,7 +186,7 @@ let behaviorIsInteresting = fun
 let showBehavior = fun
   | Sleeping => "sleeping"
   | Sitting => "sitting"
-  | Moving => "moving"
+  | Moving => "moving around"
   | Eating => "eating"
   | Playing => "playing";
 
@@ -274,6 +274,7 @@ and personUpdate =
   | Observe(observation)
   | Condition(condition)
   | AddGoal(anyGoal)
+  | RemoveGoal(anyGoal)
   // FinishGoal(anyGoal)
   | SetPosition(position)
   // Notice
@@ -303,6 +304,7 @@ and personExperience = {
 
 and person = {
   id: int,
+  arrivalTime: int,
   demographics,
   // name: string,
   // age: int,
@@ -372,10 +374,11 @@ let chooseName = (rng, gender) => {
   rng->Prando.choose(names);
 };
 
-let person = (id, rng, position) => {
+let person = (id, rng, position, arrivalTime) => {
   let gender = rng->Prando.choose([|Male, Female|]);
   {
     id,
+    arrivalTime,
     // name: rng->Prando.choose(names) ++ " #" ++ string_of_int(id),
     demographics: {
       age: rng->Prando.int(5, 25),
@@ -430,6 +433,7 @@ let showPersonUpdate = fun
   | Characteristics(characteristics) => "Characteristics"
   | Condition(condition) => "Condition"
   | AddGoal(anyGoal) => "Add goal " ++ showGoal(anyGoal)
+  | RemoveGoal(anyGoal) => "Remove goal " ++ showGoal(anyGoal)
   | SetPosition(position) => "Set position"
   | Observe(observation) => "Observe " ++ showObservation(observation)
   // Notice

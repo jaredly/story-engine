@@ -3,8 +3,8 @@ let str = React.string;
 
 module Expander = {
   [@react.component]
-  let make = (~header, ~renderBody) => {
-    let (isOpen, setOpen) = Hooks.useState(false);
+  let make = (~openInitially=false, ~header, ~renderBody) => {
+    let (isOpen, setOpen) = Hooks.useState(openInitially);
     if (isOpen) {
       <div>
         <div onClick={_ => setOpen(false)} className=Css.(style([cursor(`pointer), padding(px(8))]))>
@@ -44,6 +44,7 @@ module Person = {
   [@react.component]
   let make = (~world, ~person: Types.person) => {
     <Expander
+      openInitially=true
       header={str(person.demographics.name)}
       renderBody={() => {
         <div>
@@ -117,7 +118,7 @@ let make = (~world: React.Ref.t(Types.world)) => {
   });
   let world = world->React.Ref.current;
   <div>
-    <button onClick={_evt => tick()}> {React.string("Check")} </button>
+    // <button onClick={_evt => tick()}> {React.string("Check")} </button>
     <div>
       {world.map.buildings
        ->Belt.Map.Int.valuesToArray

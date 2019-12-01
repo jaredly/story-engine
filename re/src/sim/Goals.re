@@ -63,17 +63,12 @@ let watchTheAnimals = (bid, person, world) => {
       // Also if they've been concentrating for a few minutes, they have
       // a random chance of spotting a mostly-hidden animal.
       ->Belt.List.keep(animal => animal.visibility > 0.2);
-      let module Cmp = Belt.Id.MakeComparable({
-        type t = Types.animalBehavior;
-        let cmp = compare;
-        // let identity = x => x;
-      });
       let updates = if (interestingAnimals == []) {
         [
           {update: Person(person.id, Observe(NoAnimals)), trail: [kind]}
         ]
       } else {
-        let map = Belt.Map.make(~id=(module Cmp));
+        let map = Types.emptyAnimalBehaviorMap();
         let animalsByBehavior = interestingAnimals->Belt.List.reduce(
           map,
           (map, animal) => map->Belt.Map.set(animal.behavior, switch (map->Belt.Map.get(animal.behavior)) {
@@ -283,6 +278,11 @@ let chooseExhibit = (world: Types.world, person: Types.person) => {
       | _ => (satisfied, unsatisfied, failed)
     }
   });
+  let lastExhibit = switch (person.pastGoals) {
+    | [{goal: GoToExhibit({attrs: id})}, ..._] => Some(id)
+    | _ => None
+  };
+  Js.log2("last", lastExhibit);
 
   let exhibitsLeft =
     world.map.buildings
@@ -290,7 +290,9 @@ let chooseExhibit = (world: Types.world, person: Types.person) => {
     ->Belt.Array.keepMap(building =>
         switch (building.kind) {
         | Exhibit(_) =>
-          if (satisfied->Belt.Set.Int.has(building.id)) {
+          if (lastExhibit == Some(building.id)) {
+            None;
+          } else if (satisfied->Belt.Set.Int.has(building.id)) {
             None;
           } else {
             switch (unsatisfied->Belt.Map.Int.get(building.id)) {
@@ -362,8 +364,11 @@ let randomGoal = (world: Types.world, person: Types.person) =>
     //   world.rng
     //   ->Prando.choose(exhibits);
     switch (chooseExhibit(world, person)) {
-      | None => leaveGoal(world, person)
+      | None =>
+        Js.log("Leaving");
+        leaveGoal(world, person)
       | Some((id, reason)) => {
+        Js.log2("Chose", id);
         goToExhibit(world, person, id);
       }
     }
