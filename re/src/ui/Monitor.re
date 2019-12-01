@@ -39,7 +39,11 @@ let getIcon = name => {
 module Narrative = {
   [@react.component]
   let make = (~person: Types.person, ~narrative: Story.narrative) => {
-    <div>
+    <div className=Css.(style([
+      padding(px(16)),
+      borderRadius(px(8)),
+      boxShadow(Shadow.box(~blur=px(5), hex("aaa")))
+    ]))>
       <div className=Css.(style([display(`flex), flexDirection(`row), alignItems(`center)]))>
         <img
           className=Css.(style([width(px(50)), marginRight(px(16))]))
@@ -51,7 +55,7 @@ module Narrative = {
         </span>
         {str(Story.stars(narrative.stars))}
       </div>
-      <section>
+      <section className="story">
         {narrative.body
          ->Belt.List.toArray
          ->Belt.Array.mapWithIndex((i, p) =>
@@ -59,6 +63,12 @@ module Narrative = {
            )
          ->React.array}
       </section>
+      // {React.string(string_of_int(narrative.wordCount) ++ " words")}
+      {narrative.helpful > 3 ?
+      <div>
+        {React.string(string_of_int(narrative.helpful) ++ " people found this helpful")}
+      </div>
+      : React.null}
     </div>;
   };
 };
@@ -71,7 +81,7 @@ module Person = {
       header={str(person.demographics.name)}
       renderBody={() => {
         <div>
-          <Narrative person narrative={Story.narrate(person, React.Ref.current(world))} />
+          <Narrative person narrative={Story.narrate(React.Ref.current(world), person)} />
           // {person.experiences
           //  ->Belt.List.toArray
           //  ->Belt.Array.mapWithIndex((i, {time, goalTrail, update}) => {

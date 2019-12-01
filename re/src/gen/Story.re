@@ -2,7 +2,19 @@
 open Types;
 
 type paragraph = list(string);
-type narrative = {title: string, body: list(paragraph), stars: int};
+type narrative = {
+  title: string,
+  body: list(paragraph),
+  stars: int,
+  helpful: int,
+  wordCount: int,
+};
+
+let wordCount = text => text->Js.String2.splitByRe([%bs.re "/\W+/g"])->Belt.Array.length;
+
+let bodyWordCount = (body) => body->Belt.List.map(
+  p => p->Belt.List.map(wordCount)->Belt.List.reduce(0, (+))
+)->Belt.List.reduce(0, (+));
 
 let rec repeat = (num, text) => num <= 0 ? "" : (text ++ repeat(num - 1, text));
 let stars = num => repeat(num, {j|★|j}) ++ repeat(5 - num, {j|☆|j});
@@ -80,10 +92,16 @@ let collapseExperiences = experiences => {
 let narrateExperience = (rng, world, person, {update, startTime, endTime, condition}, before, after) => {
   let main = switch update {
   | SetPosition(_) => 
+    if (ticksToMinutes(endTime - startTime) > 10.) {
+
     Some(rng->Prando.choose([|
-      "I walked for a while.",
-      "I walked for " ++ string_of_int(int_of_float(ticksToMinutes(endTime - startTime))) ++ " minutes."
+      "It took me a while to get there.",
+      "I had been walking for a while.",
+      "It was a " ++ string_of_int(int_of_float(ticksToMinutes(endTime - startTime))) ++ " minute walk."
     |]))
+    } else {
+      None
+    }
   | Observe(NoAnimals) => switch (before, after) {
     | ([{update: Observe(AnimalActions(_, actions))}, ..._], _) => Some("Then it hid.")
     | (_, [{update: Observe(AnimalActions(_, _))}]) => Some("At first, I didn't see any animals.")
@@ -98,7 +116,11 @@ let narrateExperience = (rng, world, person, {update, startTime, endTime, condit
   )
   | AddGoal(GoToExhibit({attrs})) => 
     let exhibit = Types.Map.getExhibit(world.map, attrs);
-    Some("I decided to go to the " ++ (exhibit.name) ++ ".")
+    Some(rng->Prando.choose([|
+      "I decided to go to the " ++ (exhibit.name) ++ ".",
+      "I then went to the " ++ (exhibit.name) ++ ".",
+      "I ended up at " ++ (exhibit.name) ++ ".",
+    |]))
   | AddGoal(Leave(_)) =>
     condition.stamina < 0.2
     ? Some("I was out of energy at that point, and decided to leave.")
@@ -114,8 +136,14 @@ let narrateExperience = (rng, world, person, {update, startTime, endTime, condit
     } else if (enjoyment > 0.2) {
       ("The " ++ exhibit.name ++ " was ok I guess.")
     } else {
-      ("I didn't like the "++ exhibit.name ++ " at all.")
-    }) ++ " " ++ stars(starRating(enjoyment)))
+      rng->Prando.choose([|
+      "I didn't like the "++ exhibit.name ++ " at all.",
+      "I wasn't impressed.",
+      "It was pretty boring.",
+      "I was expecting a little more excitement.",
+      |])
+    }))
+    // }) ++ " " ++ stars(starRating(enjoyment)))
     // }) ++ " I had stayed for " ++ Js.Float.toString(ticksToMinutes(endTime - timeStarted)) ++ " minutes")
   | _ => None
   };
@@ -150,7 +178,7 @@ let narrateExperiences = (rng, world, person, experiences) => {
 // Also, different "reporters" will have different threshholds for how interesting something
 // has to be in order to report on it?
 
-let narrate = (person: person, world: world): narrative => {
+let narrate = (world: world, person: person): narrative => {
   let rng = Prando.make(person.arrivalTime);
   let title = "A zoo story";
   let experiences = person.experiences->Belt.List.reverse;
@@ -161,7 +189,7 @@ let narrate = (person: person, world: world): narrative => {
   let avgSat = satisfactions->Belt.List.reduce(0., (+.)) /. float_of_int(Belt.List.length(satisfactions));
   let stars = rng->Prando.test(0.05)
   ? (avgSat > 0.5 ? 1 : 5)
-  : int_of_float(avgSat *. 4.) + 1;
+  : int_of_float(Js.Math.round(avgSat *. 4.)) + 1;
   let body = [
     [
       "I entered the zoo at " ++ clockTime(person.arrivalTime) ++ "."
@@ -169,5 +197,5 @@ let narrate = (person: person, world: world): narrative => {
     narrateExperiences(rng, world, person, experiences)
     // (experiences->collapseExperiences->Belt.List.keepMap(narrateExperience(world)))
   ];
-  {title, body, stars}
+  {title, body, stars, helpful: rng->Prando.int(0, 10), wordCount: bodyWordCount(body)}
 }
