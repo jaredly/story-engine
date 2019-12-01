@@ -125,6 +125,8 @@ let make = (~world: React.Ref.t(Types.world)) => {
     Some(() => Js.Global.clearInterval(tid));
   });
   <div>
+    {React.string(Story.clockTime(world->React.Ref.current.clock))}
+    {React.string(Story.clockTime(Types.closingTime))}
     <div>
       {React.Ref.current(world).map.buildings
        ->Belt.Map.Int.valuesToArray

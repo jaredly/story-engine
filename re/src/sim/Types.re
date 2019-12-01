@@ -115,6 +115,13 @@ let walkingSpeed = (rng, age) => mphToPixelsPerTick(age < 8 ? rng->Prando.range(
 // walking speed of 2mph is 176 feet per minute
 // 100px needs to be 500 ft
 
+/**
+ * TickLength is 1 minute. I guess? Doesn't make for as nice of an animation.
+ * Maybe I'll have a "multiplier" that gets applied to... everything?
+ * Or a function that is "minutes"
+ */
+let closingTime = minutesToTicks((17. -. 9.) *. 60.);
+
 open Map;
 
 type emotionKind =

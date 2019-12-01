@@ -350,7 +350,9 @@ let leaveGoal = (world, person) => {
 };
 
 let randomGoal = (world: Types.world, person: Types.person) =>
-  if (person.condition.stamina <= 0.2) {
+  if (world.clock > closingTime - minutesToTicks(30.)) {
+      leaveGoal(world, person)
+  } else if (person.condition.stamina <= 0.2) {
       // let Goal(inner) = goal.contents;
       leaveGoal(world, person)
   } else {

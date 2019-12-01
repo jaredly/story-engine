@@ -1,12 +1,5 @@
 open Types;
 
-/**
- * TickLength is 1 minute. I guess? Doesn't make for as nice of an animation.
- * Maybe I'll have a "multiplier" that gets applied to... everything?
- * Or a function that is "minutes"
- */
-let closingTime = minutesToTicks(17. -. 9. *. 60.);
-
 let idGenerator = () => {
   let last = ref(0);
   () => {
@@ -115,7 +108,7 @@ let step = world => {
   world.clock = world.clock + 1;
   let numBuildings = world.map.buildings->Belt.Map.Int.size;
   let maxPeople = numBuildings * world.maxPeoplePerExhibit;
-  if (world.people->Belt.Map.Int.size < maxPeople
+  if (world.clock < closingTime - minutesToTicks(30.) && world.people->Belt.Map.Int.size < maxPeople
       && world.rng->Prando.float < 0.04) {
     world->addPerson;
   };
