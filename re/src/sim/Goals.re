@@ -59,10 +59,40 @@ let watchTheAnimals = (bid, person, world) => {
       let interestingAnimals = aids
       ->Belt.Set.Int.toList
       ->Belt.List.keepMap(world.animals->Belt.Map.Int.get)
-      ->Belt.List.keep(animal => animal.visibility > 0.2 && Types.behaviorIsInteresting(animal.behavior));
-      let updates = interestingAnimals->Belt.List.map(a => {
-        {update: Person(person.id, Observe(AnimalAction(a.kind, 1, a.behavior))), trail: [kind]}
+      // TODO base this on the person's attentiveness / concentration
+      // Also if they've been concentrating for a few minutes, they have
+      // a random chance of spotting a mostly-hidden animal.
+      ->Belt.List.keep(animal => animal.visibility > 0.2);
+      let module Cmp = Belt.Id.MakeComparable({
+        type t = Types.animalBehavior;
+        let cmp = compare;
+        // let identity = x => x;
       });
+      let updates = if (interestingAnimals == []) {
+        [
+          {update: Person(person.id, Observe(NoAnimals)), trail: [kind]}
+        ]
+      } else {
+        let map = Belt.Map.make(~id=(module Cmp));
+        let animalsByBehavior = interestingAnimals->Belt.List.reduce(
+          map,
+          (map, animal) => map->Belt.Map.set(animal.behavior, switch (map->Belt.Map.get(animal.behavior)) {
+            | None => 1
+            | Some(n) => n + 1
+          })
+        );
+        let a = interestingAnimals->List.hd;
+
+        let actions = animalsByBehavior->Belt.Map.toList->Belt.List.map(((k, v)) => {
+          (v, k)
+        });
+        [
+          {update: Person(person.id, Observe(AnimalActions(a.kind, actions))), trail: [kind]}
+        ]
+      };
+      // let updates = interestingAnimals->Belt.List.map(a => {
+      //   {update: Person(person.id, Observe(AnimalActions(a.kind, 1, a.behavior))), trail: [kind]}
+      // });
       let enjoyment = enjoyment + interestingAnimals->Belt.List.length;
       // TODO check their patience, etc.
       if (time > maxTime) {

@@ -77,6 +77,11 @@ module Map = {
     pointToPoint: Belt.Map.Int.t(Belt.Map.Int.t(int)),
   };
 
+  let getExhibit = (map, id) => switch (map.buildings->Belt.Map.Int.getExn(id).kind) {
+    | Exhibit(a, b, c) => (a, b, c)
+    | _ => failwith("not an exhibit")
+  };
+
   let findPath = (map, p1, p2) => {
     Astar.js(
       ~start=p1,
@@ -218,7 +223,8 @@ type animal = {
 };
 
 type observation =
-  | AnimalAction(string, int, animalBehavior);
+  | NoAnimals
+  | AnimalActions(string, list((int, animalBehavior)));
 
 type goalResult('result) =
   | Failed(string)
@@ -411,8 +417,13 @@ let showGoal = goal => switch goal {
   | Leave({attrs}) => "Leave the zoo by exit " ++ string_of_int(attrs)
 };
 
-let showObservation = fun
-  | AnimalAction(name, count, behavior) => string_of_int(count) ++ " " ++ name ++ "s " ++ showBehavior(behavior);
+let showObservation =
+  fun
+  | NoAnimals => "no animals"
+  | AnimalActions(name, behaviors) =>
+    behaviors->Belt.List.map(((count, behavior)) => {
+      string_of_int(count) ++ " " ++ name ++ "s " ++ showBehavior(behavior);
+    }) |> String.concat(" and ");
 
 let showPersonUpdate = fun
   | AddEmotion(emotion) => "Add emotion"
@@ -422,4 +433,10 @@ let showPersonUpdate = fun
   | SetPosition(position) => "Set position"
   | Observe(observation) => "Observe " ++ showObservation(observation)
   // Notice
-  | Remove => "Remove"
+  | Remove => "Remove";
+
+module CmpAnimalBehavior = Belt.Id.MakeComparable({
+  type t = animalBehavior;
+  let cmp = compare;
+});
+let emptyAnimalBehaviorMap = () => Belt.Map.make(~id=(module CmpAnimalBehavior));
