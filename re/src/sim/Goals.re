@@ -282,7 +282,7 @@ let chooseExhibit = (world: Types.world, person: Types.person) => {
     | [{goal: GoToExhibit({attrs: id})}, ..._] => Some(id)
     | _ => None
   };
-  Js.log2("last", lastExhibit);
+  // Js.log2("last", lastExhibit);
 
   let exhibitsLeft =
     world.map.buildings
@@ -365,10 +365,10 @@ let randomGoal = (world: Types.world, person: Types.person) =>
     //   ->Prando.choose(exhibits);
     switch (chooseExhibit(world, person)) {
       | None =>
-        Js.log("Leaving");
+        // Js.log("Leaving");
         leaveGoal(world, person)
       | Some((id, reason)) => {
-        Js.log2("Chose", id);
+        // Js.log2("Chose", id);
         goToExhibit(world, person, id);
       }
     }

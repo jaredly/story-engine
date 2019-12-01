@@ -29,8 +29,8 @@ module Narrative = {
       </h3>
       <section>
         {narrative.body->Belt.List.toArray
-        ->Belt.Array.map(p => (
-          <p>
+        ->Belt.Array.mapWithIndex((i, p) => (
+          <p key={string_of_int(i)}>
             {str(String.concat(" ", p))}
           </p>
         ))
@@ -42,9 +42,9 @@ module Narrative = {
 
 module Person = {
   [@react.component]
-  let make = (~world, ~person: Types.person) => {
+  let make = (~showing=false, ~world, ~person: Types.person) => {
     <Expander
-      openInitially=true
+      openInitially=showing
       header={str(person.demographics.name)}
       renderBody={() => {
         <div>
@@ -102,33 +102,23 @@ module Building = {
       }}
     />
   }
-}
+};
 
 [@react.component]
 let make = (~world: React.Ref.t(Types.world)) => {
-  // Js.log(world->React.Ref.current.people);
-  // Js.log(world->React.Ref.current.map);
   let (tick, setTick) = Hooks.useState(0);
   let tick = () => setTick(tick + 1);
   React.useEffect(() => {
-    let tid = Js.Global.setInterval(() => {
-      tick()
-    }, 500);
-    Some(() => Js.Global.clearInterval(tid))
+    let tid = Js.Global.setInterval(() => {tick()}, 500);
+    Some(() => Js.Global.clearInterval(tid));
   });
   let world = world->React.Ref.current;
   <div>
-    // <button onClick={_evt => tick()}> {React.string("Check")} </button>
     <div>
       {world.map.buildings
        ->Belt.Map.Int.valuesToArray
        ->Belt.Array.map(building =>
-           <Building world building key={string_of_int(building.id)}/>
-            //  {switch (building.kind) {
-            //   | Exhibit(animals, name, terrain) => React.string(name)
-            //   | _ => React.string("unknwone building")
-            //   }}
-          //  </div>
+           <Building world building key={string_of_int(building.id)} />
          )
        ->React.array}
     </div>
@@ -136,9 +126,13 @@ let make = (~world: React.Ref.t(Types.world)) => {
       {world.people
        ->Belt.Map.Int.valuesToArray
        ->Belt.Array.map(person =>
-           <Person world person key={string_of_int(person.id)}/>
-              // {React.string(person.demographics.name)} </div>
-             // {React.string(string_of_int(person.id))}
+           <Person world person key={string_of_int(person.id)} />
+         )
+       ->React.array}
+      {world.peopleWhoLeft
+       ->Belt.List.toArray
+       ->Belt.Array.map(person =>
+           <Person showing=true world person key={string_of_int(person.id)} />
          )
        ->React.array}
     </div>

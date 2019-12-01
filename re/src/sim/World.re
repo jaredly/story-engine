@@ -53,6 +53,7 @@ let processPersonUpdate = (world, person, trail, update: Types.personUpdate) => 
 let processUpdate = (world, update: Types.goalUpdate) => switch update.update {
   | Person(id, Remove) => 
     let person = world.people->getExn(id);
+    let person = processPersonUpdate(world, person, update.trail, Remove);
     world.peopleWhoLeft = [person, ...world.peopleWhoLeft];
     world.people = world.people->remove(id)
   | Person(id, personUpdate) => 
@@ -97,10 +98,10 @@ let step = world => {
   world.clock = world.clock + 1;
   let numBuildings = world.map.buildings->Belt.Map.Int.size;
   let maxPeople = numBuildings * world.maxPeoplePerExhibit;
-  // if (world.people->Belt.Map.Int.size < maxPeople
-  //     && world.rng->Prando.float < 0.04) {
-  //   world->addPerson;
-  // };
+  if (world.people->Belt.Map.Int.size < maxPeople
+      && world.rng->Prando.float < 0.04) {
+    world->addPerson;
+  };
   world.animals =
     world.animals
     ->map(animal =>
