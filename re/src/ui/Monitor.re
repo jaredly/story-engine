@@ -25,7 +25,8 @@ module Narrative = {
   let make = (~narrative: Story.narrative) => {
     <div>
       <h3>
-        {str(narrative.title)}
+        {str(narrative.title ++ " ")}
+        {str(Story.stars(narrative.stars) ++ " stars")}
       </h3>
       <section>
         {narrative.body->Belt.List.toArray

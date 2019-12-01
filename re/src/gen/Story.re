@@ -2,7 +2,11 @@
 open Types;
 
 type paragraph = list(string);
-type narrative = {title: string, body: list(paragraph)};
+type narrative = {title: string, body: list(paragraph), stars: int};
+
+let rec repeat = (num, text) => num <= 0 ? "" : (text ++ repeat(num - 1, text));
+let stars = num => repeat(num, {j|★|j}) ++ repeat(5 - num, {j|☆|j});
+let starRating = float => Js.Math.round(float *. 4.)->int_of_float + 1;
 
 let toHTML = narrative => {|<head><meta charset=utf8><title>|} ++ narrative.title ++ "</title></head><body>"
 ++ String.concat("\n", narrative.body->Belt.List.map(p => "<p>" ++ String.concat(" ", p) ++ "</p>"));
@@ -53,6 +57,7 @@ let collapseTwoExperiences = (a, b) => {
   switch (a.update, b.update) {
     | (SetPosition(_), SetPosition(_)) => Some({...b, startTime: a.startTime})
     | (Observe(oa), Observe(ob)) when oa == ob => Some({...b, startTime: a.startTime})
+    | (AddGoal(Leave(_)), SetPosition(_)) => Some(a)
     | (Observe(AnimalActions(name, actions)), Observe(AnimalActions(name2, actions2))) when name == name2 =>
       Some({...a, endTime: b.endTime, update: Observe(AnimalActions(name, combineAnimalActions(actions, actions2)))})
     | _ => None
@@ -98,7 +103,7 @@ let narrateExperience = (rng, world, person, {update, startTime, endTime, condit
     condition.stamina < 0.2
     ? Some("I was out of energy at that point, and decided to leave.")
     : (startTime > closingTime - minutesToTicks(30.)
-    ? Some("Since the zoo was closing soon, I headed toward the exit")
+    ? Some("Since the zoo was closing soon, I headed toward the exit.")
     : Some("Since I had seen all the exhibits, I decided to leave."))
   | RemoveGoal(GoToExhibit({timeStarted, attrs, result: Some(enjoyment)})) =>
     let (animals, name, terrain) = Types.Map.getExhibit(world.map, attrs);
@@ -110,7 +115,7 @@ let narrateExperience = (rng, world, person, {update, startTime, endTime, condit
       ("The " ++ name ++ " was ok I guess.")
     } else {
       ("I didn't like the "++ name ++ " at all.")
-    }))
+    }) ++ " " ++ stars(starRating(enjoyment)))
     // }) ++ " I had stayed for " ++ Js.Float.toString(ticksToMinutes(endTime - timeStarted)) ++ " minutes")
   | _ => None
   };
@@ -149,6 +154,14 @@ let narrate = (person: person, world: world): narrative => {
   let rng = Prando.make(person.arrivalTime);
   let title = "A zoo story";
   let experiences = person.experiences->Belt.List.reverse;
+  let satisfactions = person.pastGoals->Belt.List.keepMap(({goal}) => switch goal {
+    | GoToExhibit({result: Some(satisfaction)}) => Some(satisfaction)
+    | _ => None
+  });
+  let avgSat = satisfactions->Belt.List.reduce(0., (+.)) /. float_of_int(Belt.List.length(satisfactions));
+  let stars = rng->Prando.test(0.05)
+  ? (avgSat > 0.5 ? 1 : 5)
+  : int_of_float(avgSat *. 4.) + 1;
   let body = [
     [
       "I entered the zoo at " ++ clockTime(person.arrivalTime) ++ "."
@@ -156,5 +169,5 @@ let narrate = (person: person, world: world): narrative => {
     narrateExperiences(rng, world, person, experiences)
     // (experiences->collapseExperiences->Belt.List.keepMap(narrateExperience(world)))
   ];
-  {title, body}
+  {title, body, stars}
 }
