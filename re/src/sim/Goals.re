@@ -53,7 +53,7 @@ let watchTheAnimals = (bid, person, world) => {
   let kind = "watchTheAnimals";
   {
     kind,
-    state: (0, 0, world.rng->Prando.int(20, 50)),
+    state: (0, 0., world.rng->Prando.int(20, 50)),
     updater: 
     ((time, enjoyment, maxTime), person, world) => {
       let interestingAnimals = aids
@@ -76,27 +76,31 @@ let watchTheAnimals = (bid, person, world) => {
             | Some(n) => n + 1
           })
         );
-        let a = interestingAnimals->List.hd;
+        let kind = interestingAnimals->List.hd.kind;
 
         let actions = animalsByBehavior->Belt.Map.toList->Belt.List.map(((k, v)) => {
           (v, k)
         });
         [
-          {update: Person(person.id, Observe(AnimalActions(a.kind, actions))), trail: [kind]}
+          {update: Person(person.id, Observe(AnimalActions(kind, actions))), trail: [kind]}
         ]
       };
+      let currrentEnjoyment = interestingAnimals->Belt.List.map(animal => Types.behaviorInterestingScore(animal.behavior))
+      ->Belt.List.reduce(0., (+.));
       // let updates = interestingAnimals->Belt.List.map(a => {
       //   {update: Person(person.id, Observe(AnimalActions(a.kind, 1, a.behavior))), trail: [kind]}
       // });
-      let enjoyment = enjoyment + interestingAnimals->Belt.List.length;
+      let enjoyment = enjoyment +. currrentEnjoyment;
       // TODO check their patience, etc.
       if (time > maxTime) {
         // Js.log3(name, time, enjoyment);
+        let amt = min(enjoyment /. 10.0, 1.0);
+        // Js.log3("Satisfaction", amt, enjoyment);
         (
           (time, enjoyment, maxTime),
           Succeeded(
             person.demographics.name ++ " was satisfied with the " ++ name,
-            enjoyment > 10 ? Satisfied : Unsatisfied("no interesting animals")
+            amt
           ),
           updates,
         );
@@ -270,10 +274,10 @@ let goToExhibit = (world, person, building: Types.Map.building) => {
 };
 
 let chooseExhibit = (world: Types.world, person: Types.person) => {
-  let (satisfied, unsatisfied, failed) = person.pastGoals->Belt.List.reduce((Belt.Set.Int.empty, Belt.Map.Int.empty, Belt.Set.Int.empty), ((satisfied, unsatisfied, failed), {goal}) => {
+  let (satisfied, unsatisfied, failed) = person.pastGoals->Belt.List.reduce((Belt.Set.Int.empty, Belt.Set.Int.empty, Belt.Set.Int.empty), ((satisfied, unsatisfied, failed), {goal}) => {
     switch (goal) {
-      | GoToExhibit({attrs: id, result: Some(Unsatisfied(reason))}) => (satisfied, unsatisfied->Belt.Map.Int.set(id, reason), failed)
-      | GoToExhibit({attrs: id, result: Some(Satisfied)}) => (satisfied->Belt.Set.Int.add(id), unsatisfied, failed)
+      | GoToExhibit({attrs: id, result: Some(satisfaction)}) when satisfaction < 0.2 => (satisfied, unsatisfied->Belt.Set.Int.add(id), failed)
+      | GoToExhibit({attrs: id, result: Some(_)}) => (satisfied->Belt.Set.Int.add(id), unsatisfied, failed)
       | GoToExhibit({attrs: id, result: None}) => (satisfied, unsatisfied, failed->Belt.Set.Int.add(id))
       | _ => (satisfied, unsatisfied, failed)
     }
@@ -282,7 +286,6 @@ let chooseExhibit = (world: Types.world, person: Types.person) => {
     | [{goal: GoToExhibit({attrs: id})}, ..._] => Some(id)
     | _ => None
   };
-  // Js.log2("last", lastExhibit);
 
   let exhibitsLeft =
     world.map.buildings
@@ -295,9 +298,9 @@ let chooseExhibit = (world: Types.world, person: Types.person) => {
           } else if (satisfied->Belt.Set.Int.has(building.id)) {
             None;
           } else {
-            switch (unsatisfied->Belt.Map.Int.get(building.id)) {
-            | Some(reason) => Some((building, `Unsatisfied(reason)))
-            | None =>
+            if (unsatisfied->Belt.Set.Int.has(building.id)) {
+            Some((building, `Unsatisfied))
+            } else {
               if (failed->Belt.Set.Int.has(building.id)) {
                 Some((building, `TryAgain));
               } else {

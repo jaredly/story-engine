@@ -168,9 +168,9 @@ type demographics = {
   gender,
 };
 
-type exhibitResult =
-  | Satisfied
-  | Unsatisfied(string)
+// type exhibitResult =
+//   | Satisfied
+//   | Unsatisfied(string)
 
 type animalBehavior =
   | Sleeping
@@ -179,9 +179,12 @@ type animalBehavior =
   | Eating
   | Playing
 
-let behaviorIsInteresting = fun
-  | Eating | Playing => true
-  | _ => false;
+let behaviorInterestingScore = fun
+  | Sleeping => 0.1
+  | Moving => 0.3
+  | Sitting => 0.2
+  | Eating => 0.7
+  | Playing => 1.0;
 
 let showBehavior = fun
   | Sleeping => "sleeping"
@@ -257,7 +260,7 @@ and goal('attrs, 'result) = {
 }
 
 and anyGoal =
-  | GoToExhibit(goal(int, exhibitResult))
+  | GoToExhibit(goal(int, float))
   | Leave(goal(int, unit))
 
 and pastGoal = {
