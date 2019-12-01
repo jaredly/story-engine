@@ -1,5 +1,12 @@
 open Types;
 
+/**
+ * TickLength is 1 minute. I guess? Doesn't make for as nice of an animation.
+ * Maybe I'll have a "multiplier" that gets applied to... everything?
+ * Or a function that is "minutes"
+ */
+let closingTime = minutesToTicks(17. -. 9. *. 60.);
+
 let idGenerator = () => {
   let last = ref(0);
   () => {
@@ -35,20 +42,30 @@ let pointToPoint = edges => {
 
 let processPersonUpdate = (world, person, trail, update: Types.personUpdate) => {
   // Js.log2("Person update", update)
-  let person = switch update {
+  let person =
+    switch (update) {
     | AddGoal(goal) => {...person, goals: [goal, ...person.goals]}
     | SetPosition(position) => {...person, position}
-    | RemoveGoal(_) | Observe(_) => person
-    | _ => {
+    | RemoveGoal(_)
+    | Observe(_) => person
+    | _ =>
       Js.log2("Ignoring person update", update);
-      person
-    }
-  };
+      person;
+    };
   {
     ...person,
-    experiences: [{time: world.clock, goalTrail: trail, update}, ...person.experiences]
-  }
-}
+    experiences: [
+      {
+        startTime: world.clock,
+        endTime: world.clock,
+        goalTrail: trail,
+        update,
+        condition: person.condition,
+      },
+      ...person.experiences,
+    ],
+  };
+};
 
 let processUpdate = (world, update: Types.goalUpdate) => switch update.update {
   | Person(id, Remove) => 

@@ -22,10 +22,10 @@ let step = (world, person, goal) => {
   mapGoal(goal, (world, person), {run: step})
 }
 
-let speed = 4.0;
+// let speed = 4.0;
 
-let advance = (pid, edge: Types.Map.edge, position) => {
-  let speed = speed /. edge.length;
+let advance = (person, pid, edge: Types.Map.edge, position) => {
+  let speed = person.characteristics.walkingSpeed /. edge.length;
   let (progress, goal) =
     if (edge.source == pid) {
       (
@@ -53,7 +53,7 @@ let watchTheAnimals = (bid, person, world) => {
   let kind = "watchTheAnimals";
   {
     kind,
-    state: (0, 0., world.rng->Prando.int(20, 50)),
+    state: (0, 0., minutesToTicks(world.rng->Prando.range(5., 30.))),
     updater: 
     ((time, enjoyment, maxTime), person, world) => {
       let interestingAnimals = aids
@@ -105,7 +105,7 @@ let watchTheAnimals = (bid, person, world) => {
           updates,
         );
       } else {
-        let num = world.rng->Prando.int(1, 4);
+        let num = world.rng->Prando.range(1., 4.)->Types.minutesToTicks;
         ((time + num, enjoyment, maxTime), InProcess(num), updates);
       }
     }
@@ -130,14 +130,14 @@ let goToPoint = (world, person, pid): option(Types.singleGoal('a, 'b)) => {
             switch (path) {
             | [] => ([], Succeeded("Reached the goal!", ()), [])
             | [pid] =>
-              let (position, reached) = advance(pid, edge, person.position);
+              let (position, reached) = advance(person, pid, edge, person.position);
               (
                 [pid],
-                reached ? Succeeded("Reached the goal!", ()) : InProcess(1),
+                reached ? Succeeded("Reached the goal!", ()) : InProcess(0),
                 [update(Updates.setPosition(person.id, position))],
               );
             | [pid, next, ...rest] =>
-              let (position, reached) = advance(pid, edge, person.position);
+              let (position, reached) = advance(person, pid, edge, person.position);
               if (reached) {
                 let eid =
                   world.map.pointToPoint
@@ -148,7 +148,7 @@ let goToPoint = (world, person, pid): option(Types.singleGoal('a, 'b)) => {
                 let position = {edge: eid, progress};
                 (
                   [next, ...rest],
-                  InProcess(1),
+                  InProcess(0),
                   [
                     update(Message(person.demographics.name ++ " turned")),
                     update(
@@ -159,7 +159,7 @@ let goToPoint = (world, person, pid): option(Types.singleGoal('a, 'b)) => {
               } else {
                 (
                   path,
-                  InProcess(1),
+                  InProcess(0),
                   [update(Updates.setPosition(person.id, position))],
                 );
               };
@@ -350,7 +350,7 @@ let leaveGoal = (world, person) => {
 };
 
 let randomGoal = (world: Types.world, person: Types.person) =>
-  if (person.condition.stamina <= 0.0) {
+  if (person.condition.stamina <= 0.2) {
       // let Goal(inner) = goal.contents;
       leaveGoal(world, person)
   } else {

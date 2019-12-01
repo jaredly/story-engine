@@ -100,6 +100,21 @@ module Map = {
   };
 };
 
+// Tick is currently 1 = 1 minute
+let ticksPerMinute = 5.;
+let feetPerPixel = 5.;
+let minutesToTicks = x => int_of_float(x *. ticksPerMinute);
+let ticksToMinutes = x => float_of_int(x) /. ticksPerMinute;
+let feet = x => x *. feetPerPixel;
+let mphToPixelsPerTick = mph => {
+  let feetPerMinute = mph *. 5280. /. 60.;
+  feetPerMinute /. feetPerPixel /. ticksPerMinute
+};
+let walkingSpeed = (rng, age) => mphToPixelsPerTick(age < 8 ? rng->Prando.range(1.0, 2.0)
+: age < 15 ? rng->Prando.range(2., 3.) : rng->Prando.range(2., 3.5));
+// walking speed of 2mph is 176 feet per minute
+// 100px needs to be 500 ft
+
 open Map;
 
 type emotionKind =
@@ -122,12 +137,14 @@ type characteristics = {
   curiousity: float,
   patience: float,
   excitability: float,
+  walkingSpeed: float,
 };
 
-let characteristics = rng => {
+let characteristics = (rng, age) => {
   curiousity: rng->Prando.float,
   patience: rng->Prando.float,
   excitability: rng->Prando.float,
+  walkingSpeed: walkingSpeed(rng, age)
 };
 
 // type attribute = {
@@ -146,7 +163,7 @@ let condition = rng => {
   thirst: rng->Prando.range(0.0, 0.5),
   hunger: rng->Prando.range(0.0, 0.5),
   sleepiness: rng->Prando.range(0.0, 0.5),
-  stamina: rng->Prando.range(0.5, 1.0),
+  stamina: rng->Prando.range(0.2, 1.0),
 };
 
 // when making a choice, return the list of poassible choices ass well, their probabilities, and wwhy they were likely
@@ -300,9 +317,11 @@ and position = {
 }
 
 and personExperience = {
-  time: int,
+  startTime: int,
+  endTime: int,
   goalTrail: list(string),
   update: personUpdate,
+  condition,
 }
 
 and person = {
@@ -379,19 +398,20 @@ let chooseName = (rng, gender) => {
 
 let person = (id, rng, position, arrivalTime) => {
   let gender = rng->Prando.choose([|Male, Female|]);
+  let age = rng->Prando.int(5, 35);
   {
     id,
     arrivalTime,
     // name: rng->Prando.choose(names) ++ " #" ++ string_of_int(id),
     demographics: {
-      age: rng->Prando.int(5, 25),
+      age,
       name: rng->chooseName(gender),
       clothesColor:
         "hsl(" ++ string_of_int(rng->Prando.int(0, 360)) ++ ",100%,50%)",
       gender,
     },
     emotions: [],
-    characteristics: characteristics(rng),
+    characteristics: characteristics(rng, age),
     condition: condition(rng),
     // knowledge: list(knowledge),
     goals: [],

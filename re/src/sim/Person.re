@@ -2,7 +2,7 @@ let stepCondition = (condition: Types.condition, rng) => {
   ...condition,
   thirst: min(1.0, condition.thirst +. rng->Prando.range(0.01, 0.05)),
   hunger: min(1.0, condition.hunger +. rng->Prando.range(0.01, 0.05)),
-  stamina: max(0.0, condition.stamina -. rng->Prando.range(0.0001, 0.0005)),
+  stamina: max(0.0, condition.stamina -. rng->Prando.range(0.0005, 0.001)),
 };
 
 let step = (world, person: Types.person) => {
@@ -32,13 +32,6 @@ let step = (world, person: Types.person) => {
           | Some(goal) =>
             updates
             @ [
-              // {
-              //   trail: [],
-              //   update:
-              //     Message(
-              //       person.demographics.name ++ " decided to " ++ goal.name,
-              //     ),
-              // },
               {trail: [], update: Types.Updates.addGoal(person.id, goal)},
             ]
           }
