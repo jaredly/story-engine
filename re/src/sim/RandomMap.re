@@ -146,16 +146,20 @@ let gen = (size, minDist, maxDist, rng) => {
             Types.Map.point: idx,
             id,
             kind:
-              Exhibit(
-                Belt.Set.Int.fromArray(Array.of_list(animalIds)),
-                animal##name ++ " exhibit",
-                rng->Prando.choose([|
+              Exhibit({
+                animals: Belt.Set.Int.fromArray(Array.of_list(animalIds)),
+                name: animal##name ++ " exhibit",
+                terrain: rng->Prando.choose([|
                   "forest",
                   "grassland",
                   "prarie",
                   "stream"
                 |]),
-              ),
+                id,
+                sleepWeight: rng->Prando.int(5, 10),
+                playWeight: rng->Prando.int(1, 5),
+                eatWeight: rng->Prando.int(1, 5),
+              }),
           },
         );
         (animalMap, map)

@@ -18,28 +18,50 @@ module Expander = {
       </div>
     }
   }
-}
+};
+
+type canvas;
+[@bs.module]
+external hashicon: string => canvas = "hashicon";
+[@bs.send]
+external toDataURL: canvas => string = "toDataURL";
+let iconCache = Hashtbl.create(100);
+let getIcon = name => {
+  switch (Hashtbl.find(iconCache, name)) {
+    | exception Not_found =>
+      let res = hashicon(name)->toDataURL;
+      iconCache->Hashtbl.replace(name,res)
+      res
+    | r => r
+  }
+};
 
 module Narrative = {
   [@react.component]
-  let make = (~narrative: Story.narrative) => {
+  let make = (~person: Types.person, ~narrative: Story.narrative) => {
     <div>
-      <h3>
-        {str(narrative.title ++ " ")}
-        {str(Story.stars(narrative.stars) ++ " stars")}
-      </h3>
+      <div className=Css.(style([display(`flex), flexDirection(`row), alignItems(`center)]))>
+        <img
+          className=Css.(style([width(px(50)), marginRight(px(16))]))
+          src={getIcon(person.demographics.name)}
+        />
+        <span
+          className=Css.(style([fontWeight(`bold), marginRight(px(10))]))>
+          {str(person.demographics.name)}
+        </span>
+        {str(Story.stars(narrative.stars))}
+      </div>
       <section>
-        {narrative.body->Belt.List.toArray
-        ->Belt.Array.mapWithIndex((i, p) => (
-          <p key={string_of_int(i)}>
-            {str(String.concat(" ", p))}
-          </p>
-        ))
-        ->React.array}
+        {narrative.body
+         ->Belt.List.toArray
+         ->Belt.Array.mapWithIndex((i, p) =>
+             <p key={string_of_int(i)}> {str(String.concat(" ", p))} </p>
+           )
+         ->React.array}
       </section>
-    </div>
-  }
-}
+    </div>;
+  };
+};
 
 module Person = {
   [@react.component]
@@ -49,7 +71,7 @@ module Person = {
       header={str(person.demographics.name)}
       renderBody={() => {
         <div>
-          <Narrative narrative={Story.narrate(person, React.Ref.current(world))} />
+          <Narrative person narrative={Story.narrate(person, React.Ref.current(world))} />
           // {person.experiences
           //  ->Belt.List.toArray
           //  ->Belt.Array.mapWithIndex((i, {time, goalTrail, update}) => {
@@ -70,7 +92,7 @@ module Building = {
   let make = (~world: React.Ref.t(Types.world), ~building: Types.Map.building) => {
     <Expander
       header={str(switch building.kind {
-        | Exhibit(_, name, terrain) => name ++ ": " ++ terrain
+        | Exhibit({name, terrain}) => name ++ ": " ++ terrain
         | FoodStand(_, name, _) => "Food stand " ++ name
       })}
       renderBody={() => {
@@ -79,7 +101,7 @@ module Building = {
             let world = React.Ref.current(world);
             switch building.kind {
             | FoodStand(_) => React.null
-            | Exhibit(animals, name, terrain) =>
+            | Exhibit({animals}) =>
               React.array(
                 animals->Belt.Set.Int.toArray
                 ->Belt.Array.keepMap(world.animals->Belt.Map.Int.get)

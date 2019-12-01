@@ -76,11 +76,15 @@ let gen = () => {
               id: b1,
               point: p3,
               kind:
-                Exhibit(
-                  Belt.Set.Int.empty,
-                  "Giraffe exhibit",
-                  "grass and tall trees",
-                ),
+                Exhibit({
+                  animals: Belt.Set.Int.empty,
+                  name: "Giraffe exhibit",
+                  terrain: "grass and tall trees",
+                  sleepWeight: 5,
+                  eatWeight: 1,
+                  playWeight: 1,
+                  id: b1
+                }),
             },
           )
         ->set(
@@ -89,11 +93,15 @@ let gen = () => {
               id: b2,
               point: p4,
               kind:
-                Exhibit(
-                  Belt.Set.Int.empty,
-                  "Hamerhead shark exhibit",
-                  "a large tank full of water",
-                ),
+                Exhibit({
+                  animals: Belt.Set.Int.empty,
+                  name: "Hamerhead shark exhibit",
+                  terrain: "a large tank full of water",
+                  sleepWeight: 5,
+                  eatWeight: 1,
+                  playWeight: 1,
+                  id: b2
+                }),
             },
           ),
       locations:

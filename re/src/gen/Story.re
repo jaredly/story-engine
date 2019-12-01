@@ -97,8 +97,8 @@ let narrateExperience = (rng, world, person, {update, startTime, endTime, condit
   | Remove => Some("I then left the zoo at " ++ clockTime(startTime) ++ "."
   )
   | AddGoal(GoToExhibit({attrs})) => 
-    let (animals, name, terrain) = Types.Map.getExhibit(world.map, attrs);
-    Some("I decided to go to the " ++ (name) ++ ".")
+    let exhibit = Types.Map.getExhibit(world.map, attrs);
+    Some("I decided to go to the " ++ (exhibit.name) ++ ".")
   | AddGoal(Leave(_)) =>
     condition.stamina < 0.2
     ? Some("I was out of energy at that point, and decided to leave.")
@@ -106,15 +106,15 @@ let narrateExperience = (rng, world, person, {update, startTime, endTime, condit
     ? Some("Since the zoo was closing soon, I headed toward the exit.")
     : Some("Since I had seen all the exhibits, I decided to leave."))
   | RemoveGoal(GoToExhibit({timeStarted, attrs, result: Some(enjoyment)})) =>
-    let (animals, name, terrain) = Types.Map.getExhibit(world.map, attrs);
+    let exhibit = Types.Map.getExhibit(world.map, attrs);
     Some((if (enjoyment > 0.9) {
-      ("The " ++ name ++ " was so cool!")
+      ("The " ++ exhibit.name ++ " was so cool!")
     } else if (enjoyment > 0.5) {
-      ("The " ++ name ++ " was pretty cool!")
+      ("The " ++ exhibit.name ++ " was pretty cool!")
     } else if (enjoyment > 0.2) {
-      ("The " ++ name ++ " was ok I guess.")
+      ("The " ++ exhibit.name ++ " was ok I guess.")
     } else {
-      ("I didn't like the "++ name ++ " at all.")
+      ("I didn't like the "++ exhibit.name ++ " at all.")
     }) ++ " " ++ stars(starRating(enjoyment)))
     // }) ++ " I had stayed for " ++ Js.Float.toString(ticksToMinutes(endTime - timeStarted)) ++ " minutes")
   | _ => None

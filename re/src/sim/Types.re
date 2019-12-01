@@ -57,8 +57,18 @@ module Map = {
     refill_timer: (int, int),
   };
 
+  type exhibit = {
+    id: int,
+    animals: Belt.Set.Int.t,
+    name: string,
+    terrain: string,
+    sleepWeight: int,
+    playWeight: int,
+    eatWeight: int,
+  };
+
   type buildingKind =
-    | Exhibit(Belt.Set.Int.t, string, string)
+    | Exhibit(exhibit)
     | FoodStand(Belt.Map.Int.t(foodForSale), string, string);
 
   type building = {
@@ -78,7 +88,7 @@ module Map = {
   };
 
   let getExhibit = (map, id) => switch (map.buildings->Belt.Map.Int.getExn(id).kind) {
-    | Exhibit(a, b, c) => (a, b, c)
+    | Exhibit(exhibit) => exhibit
     | _ => failwith("not an exhibit")
   };
 

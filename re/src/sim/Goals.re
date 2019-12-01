@@ -45,9 +45,9 @@ let point = (position, edge: Types.Map.edge) =>
   position.progress < 0.5 ? edge.source : edge.dest;
 
 let watchTheAnimals = (bid, person, world) => {
-  let (aids, name, terrain) =
+  let exhibit =
     switch (world.map.buildings->Belt.Map.Int.getExn(bid).kind) {
-    | Exhibit(aids, name, terrain) => (aids, name, terrain)
+    | Exhibit(exhibit) => exhibit
     | _ => assert(false)
     };
   let kind = "watchTheAnimals";
@@ -56,7 +56,7 @@ let watchTheAnimals = (bid, person, world) => {
     state: (0, 0., minutesToTicks(world.rng->Prando.range(5., 30.))),
     updater: 
     ((time, enjoyment, maxTime), person, world) => {
-      let interestingAnimals = aids
+      let interestingAnimals = exhibit.animals
       ->Belt.Set.Int.toList
       ->Belt.List.keepMap(world.animals->Belt.Map.Int.get)
       // TODO base this on the person's attentiveness / concentration
@@ -99,7 +99,7 @@ let watchTheAnimals = (bid, person, world) => {
         (
           (time, enjoyment, maxTime),
           Succeeded(
-            person.demographics.name ++ " was satisfied with the " ++ name,
+            person.demographics.name ++ " was satisfied with the " ++ exhibit.name,
             amt
           ),
           updates,
@@ -240,7 +240,7 @@ let leave =
 
 let goToExhibit = (world, person, building: Types.Map.building) => {
   switch (building.kind) {
-  | Types.Map.Exhibit(animals, name, terrain) =>
+  | Types.Map.Exhibit(exhibit) =>
     let goal = goToPoint(world, person, building.point);
     switch (goal) {
     | None => None
@@ -253,16 +253,16 @@ let goToExhibit = (world, person, building: Types.Map.building) => {
         result: None,
         attrs: building.id,
         // kind: GoToExhibit(building.id, None),
-        name: "go to the " ++ name,
+        name: "go to the " ++ exhibit.name,
         contents:
           Goal(chainGoals(
             "goToExhibit",
             changeMessages(
               inner,
-              person.demographics.name ++ " reached the " ++ name,
+              person.demographics.name ++ " reached the " ++ exhibit.name,
               person.demographics.name
               ++ " gave up trying to find the "
-              ++ name,
+              ++ exhibit.name,
             ),
             () => watchTheAnimals(building.id),
             "Now on to watching the animals",
